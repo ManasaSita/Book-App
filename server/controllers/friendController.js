@@ -1,0 +1,463 @@
+// controllers/friendController.js
+const mongoose = require('mongoose');
+const Users = require('../models/user');
+const FriendRequests = require('../models/friendRequests');
+const Friends = require('../models/friend'); // You might need to create this model if not present
+const MyBooks = require('../models/myBooks');
+const Books = require('../models/book');
+const Messages = require('../models/message');
+
+// Send a friend request
+exports.sendFriendRequest = async (req, res) => {
+  try {
+    console.log("sendFriendRequest------", req.body);
+    const { receiverId, senderId } = req.body;
+
+    // Ensure receiver and sender are not the same
+    if (senderId === receiverId) {
+      return res.status(400).json({ message: 'Cannot send a friend request to yourself' });
+    }
+
+    // Check if request already exists
+    const existingRequest = await FriendRequests.findOne({ sender: senderId, receiver: receiverId });
+    if (existingRequest) {
+      return res.status(400).json({ message: 'Friend request already sent' });
+    }
+
+    // Create and save new friend request
+    const newRequest = new FriendRequests({ sender: senderId, receiver: receiverId });
+    await newRequest.save();
+
+    res.status(200).json({ message: 'Friend request sent' });
+  } catch (error) {
+    console.error('Error sending friend request:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+// Get friend requests for the current user
+exports.fetchFriendRequests = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const requests = await FriendRequests.find({ receiver: userId }).populate('sender', 'username email');
+    res.status(200).json({ receivedRequests: requests });
+  } catch (error) {
+    console.error('Error fetching friend requests:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+// Respond to a friend request
+exports.respondToFriendRequest = async (req, res) => {
+  try {
+    console.log("respondToFriendRequest----------",req.body);
+    
+    const { senderId, requestId, action } = req.body; // action can be 'accept' or 'decline'
+    // const userId = req.user.id;
+
+    const request = await FriendRequests.findById(requestId);
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // console.log("request.receiver-------", request.receiver);
+    // console.log("senderId----------", senderId);
+    
+    if (request.receiver.toString() !== senderId) {
+      return res.status(403).json({ message: 'Unauthorized action' });
+    }
+
+    if (action === 'accept') {
+      // Add friends
+      await Friends.create({ user: request.sender, friend: request.receiver });
+      await Friends.create({ user: request.receiver, friend: request.sender });
+      // Remove the friend request
+      await FriendRequests.findByIdAndDelete(requestId);
+      res.status(200).json({ message: 'Friend request accepted' });
+      return;
+    } else if (action === 'decline') {
+      // Remove the friend request
+      await FriendRequests.findByIdAndDelete(requestId);
+      res.status(200).json({ message: 'Friend request declined' });
+      return;
+    } else {
+      res.status(400).json({ message: 'Invalid action' });
+      return;
+    }
+  } catch (error) {
+    console.error('Error responding to friend request:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+// Get friends of the current user
+exports.fetchFriends = async (req, res) => {
+  console.log('fetchFriends controller started.', req.params);
+  
+  try {
+    const { userId }= req.params;
+    // console.log('User ID:', userId);
+
+    const friends = await Friends.find({ user: userId });
+    console.log('Friends found:', friends);
+
+    const friendIds = friends.map(friend => friend.friend);
+
+    const users = await Users.find({_id: { $in: friendIds } }).select('username');
+
+    if (!res.headersSent) {
+      // console.log('Sending friends list response.');
+      res.status(200).json(users);
+      return;
+    } else {
+      console.error('Headers were already sent when trying to send friends list.');
+      return;
+    }
+  } catch (error) {
+    console.error('Error fetching friends:', error);
+
+    if (!res.headersSent) {
+      console.log('Sending error response.');
+      res.status(500).send('Server error');
+    } else {
+      console.error('Headers were already sent when trying to send an error response.');
+    }
+  }
+};
+
+
+
+// Search users
+exports.searchUsers = async (req, res) => {
+  try {
+    console.log("searchUser------", req.query);
+    
+    const { username } = req.query;
+    const users = await Users.find({ username: new RegExp(username, 'i') }); // Case-insensitive search
+    // const users = await Users.find({ username: username }); // Case-insensitive search
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+// Get details of a specific friend
+exports.getFriendDetails = async (req, res) => {
+  console.log("getFriendDetails controller called");
+
+  try {
+    const friendId = req.params.id;
+    console.log("getFriendDetails---------controller---", friendId);
+
+    // Find the user by ID
+    const friendProfile = await Users.findById(friendId).select('username email');
+
+    if (!friendProfile) {
+      return res.status(404).json({ message: 'Friend not found' });
+    }
+
+    // Convert Mongoose document to a plain JavaScript object
+    const friendProfileObject = friendProfile.toObject();
+
+    // Fetch comments related to the friend
+    const commentsData = await Friends.find({ friend: friendId }).select('comments');
+    console.log("comments------------", commentsData);
+
+    // Initialize an array to hold all comments with usernames
+    let allComments = [];
+
+    // Iterate through all documents with comments
+    for (const doc of commentsData) {
+      for (const comment of doc.comments) {
+        allComments.push(comment);
+      }
+    }
+
+    // Extract the user IDs of commenters
+    const commenterIds = allComments.map(comment => comment.commenter);
+
+    // Fetch the usernames of the commenters
+    const commenterProfiles = await Users.find({ _id: { $in: commenterIds } }).select('username');
+
+    // Create a map of commenter IDs to usernames
+    const commenterMap = commenterProfiles.reduce((map, user) => {
+      map[user._id] = user.username;
+      return map;
+    }, {});
+
+    // Add the username to each comment
+    const commentsWithUsernames = allComments.map(comment => ({
+      ...comment.toObject(),
+      commenterUsername: commenterMap[comment.commenter] || 'Unknown'
+    }));
+
+    console.log("comments count---------", commentsWithUsernames.length);
+    
+
+    // Attach comments with usernames to the friend profile object
+    friendProfileObject.comments = commentsWithUsernames;
+
+    // Find the books related to the friend
+    const friendBooks = await MyBooks.findOne({ user_id: friendId });
+
+    if (!friendBooks) {
+      // If no books found, return the profile with an empty book list
+      return res.status(200).json({ friendProfile: friendProfileObject, detailedBooks: [] });
+    }
+
+    // Extract book IDs from the friendBooks.books array
+    const bookIds = friendBooks.books.map(book => book.book_id);
+
+    // Find the details of these books from the Books collection
+    const booksDetails = await Books.find({ _id: { $in: bookIds } });
+
+    // Map the booksDetails to include additional info like status, rating, etc.
+    const detailedBooks = friendBooks.books.map(userBook => {
+      const bookDetail = booksDetails.find(book => book._id.equals(userBook.book_id));
+
+      if (bookDetail) {
+        return {
+          ...bookDetail.toObject(),
+          status: userBook.status,
+          rating: userBook.rating,
+          progress: userBook.progress,
+          pagesRead: userBook.pagesRead,
+        };
+      } else {
+        return {
+          status: userBook.status,
+          rating: userBook.rating,
+          progress: userBook.progress,
+          pagesRead: userBook.pagesRead,
+        };
+      }
+    });
+
+    // console.log("friendProfile-------------", friendProfileObject);
+
+    res.status(200).json({ friendProfile: friendProfileObject, detailedBooks });
+  } catch (error) {
+    console.error('Error fetching friend details:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+exports.postComment = async (req, res) => {
+  try {
+    const { commenterId, friendId, text, bookId } = req.body;
+
+    console.log("Received data for posting comment:", req.body);
+    console.log("Commenter ID:", commenterId);
+
+    if (!friendId || !text) {
+      return res.status(400).json({ message: 'Friend ID and content are required' });
+    }
+
+    if (!commenterId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    const friendship = await Friends.findOne({ user: commenterId, friend: friendId });
+
+    if (!friendship) {
+      return res.status(404).json({ message: 'Friendship not found' });
+    }
+
+    const comment = {
+      commenter: commenterId,
+      targetUser: friendId,
+      content: text,
+      createdAt: new Date(),
+    };
+
+    if (bookId) {
+      const bookExists = await Books.findById(bookId);
+      if (!bookExists) {
+        return res.status(404).json({ message: 'Book not found' });
+      }
+      comment.bookLink = bookId;
+    }
+
+    try {
+      friendship.comments.push(comment);
+      await friendship.save();
+    } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        console.error('Mongoose validation error:', error.errors);
+        return res.status(400).json({ errors: error.errors });
+      } else {
+        console.error('Error posting comment:', error);
+        return res.status(500).send('Server error');
+      }
+    }
+
+    // Get all friendships for the friend (to retrieve all comments)
+    const allFriendships = await Friends.find({ friend: friendId });
+
+    // Extract all comments from all friendships
+    let allComments = [];
+    allFriendships.forEach(friendship => {
+      allComments = allComments.concat(friendship.comments);
+    });
+
+    // Extract unique commenter IDs from all comments
+    const commenterIds = [...new Set(allComments.map(comment => comment.commenter))];
+
+    // Fetch usernames of all commenters
+    const commenterProfiles = await Users.find({ "_id": { $in: commenterIds } }).select('username');
+    
+    const commenterMap = commenterProfiles.reduce((map, user) => {
+      map[user._id.toString()] = user.username;
+      return map;
+    }, {});
+
+    // Add username to each comment
+    const commentsWithUsernames = allComments.map(comment => ({
+      ...comment.toObject(),
+      commenterUsername: commenterMap[comment.commenter.toString()] || 'Unknown'
+    }));
+
+    res.status(201).json({ message: 'Comment posted successfully', commentsWithUsernames });
+
+  } catch (error) {
+    console.error('Error posting comment:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+exports.getDetails = async (req, res) => {
+  try {
+    console.log("getDetails--------", req.user.id);
+
+    const { userId } = req.params;
+
+    // Fetch user details from the Friends collection
+    const userDetails = await Friends.find({ friend: userId });
+
+    if (!userDetails || userDetails.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Extract unique user IDs from userDetails
+    const userIds = userDetails.map(detail => detail.user);
+
+    // Fetch the corresponding usernames from the Users collection
+    const users = await Users.find({ _id: { $in: userIds } }, 'username');
+
+    // Create a map of user IDs to usernames for easy lookup
+    const userMap = users.reduce((acc, user) => {
+      acc[user._id] = user.username;
+      return acc;
+    }, {});
+
+    // Add the username to each userDetail based on the user ID
+    const detailedUserDetails = userDetails.map(detail => ({
+      ...detail.toObject(),
+      username: userMap[detail.user] || 'Unknown User'
+    }));
+
+    console.log("detailedUserDetails--------", detailedUserDetails);
+
+    return res.status(200).json({ userDetails: detailedUserDetails });
+
+  } catch (error) {
+    console.error('Error getting your profile details:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+// Delete Comment
+exports.deleteComment = async (req, res) => {
+  const { userId, friendId, commentId } = req.body;
+  // const userId = req.user.id;
+  console.log("deleteComment---------", req.body);
+  
+
+  try {
+    const friendDoc = await Friends.findOneAndUpdate(
+      { 
+        $or: [
+          { 'comments.commenter': userId }, 
+          { 'comments.targetUser': userId }
+        ] 
+      },
+      { $pull :{ comments: { _id: commentId } } },
+      { new: true }  // Return the updated document
+    ).select('comments');
+
+    console.log("after delete-------", friendDoc);
+
+    if (!friendDoc) {
+      return res.status(403).json({ message: 'Unauthorized to delete this comment' });
+    }
+
+     await friendDoc.save();
+
+    // Add the username to each comment
+    const commenterIds = friendDoc.comments.map(comment => comment.commenter);
+    const commenterProfiles = await Users.find({ _id: { $in: commenterIds } }).select('username');
+    const commenterMap = commenterProfiles.reduce((map, user) => {
+      map[user._id] = user.username;
+      return map;
+    }, {});
+
+    const commentsWithUsernames = friendDoc.comments.map(comment => ({
+      ...comment.toObject(),
+      commenterUsername: commenterMap[comment.commenter] || 'Unknown'
+    }));
+    console.log("afterDelete-------", commentsWithUsernames.length);
+
+    // Return the updated comments list
+    return res.status(200).json({ comments: commentsWithUsernames });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+// Fetch all messages between the current user and a friend
+exports.fetchMessages = async (req, res) => {
+  console.log("fetchMessages----------controller-------", req.params, req.params);
+  
+  try {
+    const { senderId } = req.query; // Retrieve senderId from the query parameters
+    const { friendId } = req.params;
+
+    const messages = await Messages.find({
+      $or: [
+        { sender: senderId, receiver: friendId },
+        { sender: friendId, receiver: senderId }
+      ]
+    }).sort('createdAt');
+
+    console.log("fetchMessages----------controller-------", messages);
+
+    res.status(200).json(messages);
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    res.status(500).send('Server error');
+  }
+};
+
+// Send a message to a friend
+exports.sendMessage = async (req, res) => {
+  console.log("sendMessage------------controller---------", req.body);
+  
+  try {
+    const { senderId, friendId, content } = req.body;
+    // const senderId = req.user.id;
+
+    const newMessage = new Messages({
+      sender: senderId,
+      receiver: friendId,
+      content
+    });
+
+    await newMessage.save();
+    res.status(200).json(newMessage);
+  } catch (error) {
+    console.error('Error sending message:', error);
+    res.status(500).send('Server error');
+  }
+};

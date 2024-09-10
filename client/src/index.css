@@ -1,0 +1,916 @@
+/* styles.css */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+}
+
+.bookshelf, .dashboard {
+  padding: 20px;
+}
+
+.book-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.book-item {
+  flex: 1 1 200px;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.currently-reading, .social-cards {
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .book-item {
+    flex: 1 1 100%;
+  }
+}
+
+.launch-page {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+
+  .nav-button {
+    border: navajowhite;
+    background-color: white;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .nav-button:hover {
+    font-size: 20px;
+    color: darkblue;
+  }
+}
+
+.login-page, .register-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10% 30% 0 30%;
+  box-shadow: 0px 0px 14px 0px;
+  border-radius: 15px;
+
+  .app-name {
+    margin: 40px 40px 20px 40px;
+    font-size: 36px;
+    font-weight: bold;
+  }
+
+  .login, .register {
+    font-size: 23px;
+    margin: 20px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 50px;
+    width: 100%;
+
+    label {
+      width: 64%;
+    }
+
+    input {
+      padding: 12px;
+      margin: 8px;
+      font-size: 15px;
+      width: 60%;
+      border-radius: 9px;
+      border: 1px solid black;
+    }
+
+    input::placeholder {
+      color: #cccccc89;
+    }
+
+    button {
+      margin: 10px;
+      width: 64%;
+      height: 40px;
+      border-radius: 20px;
+      border: 1px solid black;
+      background-color: black;
+      color: white;
+      font-size: 20px;
+    }
+
+    p {
+      color: #0101014f;
+    }
+
+    .error-message {
+      color: red;
+    }
+
+  }
+
+}
+
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #000000;
+  color: white;
+  position: fixed;
+  width: -webkit-fill-available;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: -moz-available;
+}
+
+.navbar-logo a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  /* background-color: #555; */
+  text-decoration: underline;
+}
+
+.selected-nav {
+  color: white;
+  text-decoration: underline;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  cursor: pointer;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: white;
+}
+
+.logout-btn:hover {
+  color: red;
+}
+
+.profile-dropdown {
+  position: relative;
+  cursor: pointer;
+}
+
+.profile-dropdown:hover {
+  text-decoration: none;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  color: black;
+  border-radius: 4px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  z-index: 1000;
+  width: max-content;
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  color: black;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.3s;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f1f1;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: black;
+  width: 100%;
+  text-align: left;
+}
+
+.logout-btn:hover {
+  background-color: #f1f1f1;
+  color: red;
+}
+
+.main-content {
+  flex-grow: 1;
+  position: absolute;
+  padding-top: 74px;
+  width: -webkit-fill-available;
+  z-index: 1;
+  width: -moz-available;
+}
+
+.book-list-container {
+  padding: 20px;
+
+  .filter-buttons {
+    margin: 10px 0;
+    border-bottom: 1px solid grey;
+    top: 74px;
+    position: sticky;
+    width: -webkit-fill-available;
+    background: white;
+
+    button{
+      background: none;
+      color: black;
+      font-size: 15px;
+    }
+
+    .active {
+      font-weight: bold;
+    }
+  }
+}
+
+.search-container {
+  margin-bottom: 20px;
+  display: flex;
+  /* justify-content: center; */
+
+  input {
+    width: 20%;
+    padding: 10px;
+    border-radius: 20px 0 0 20px;
+    border: #000000 2px solid;
+  }
+
+  /* input:focus {
+    border-radius: 20px 0 0 20px;
+  } */
+
+  button {
+    background-color: #000000;
+    border-radius: 0 20px 20px 0;
+    margin: 0;
+  }
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.book-card {
+  border: 1px solid #000;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.book-card img {
+  max-width: 100%;
+  height: 200px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.search-results {
+
+  .search-results-header {
+    display: flex;
+    width: 100%;
+    align-items: center;
+
+    h3 {
+      width: 100%;
+    }
+
+    .close-button {
+      padding: 0 10px;
+      height: fit-content;
+      background: none;
+      color: black;
+      font-weight: bold;
+      font-size: 20px;
+    }
+  }
+}
+
+.book-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.rating-container .review-container {
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 5px 10px;
+  background-color: #6c6d6eae;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+button:hover {
+  background-color: #404040;
+}
+
+.no-margin {
+  margin: 0;
+}
+
+/* UserProfile.css */
+
+.user-profile {
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+  max-width: 300px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.user-profile h2 {
+  margin-bottom: 20px;
+}
+
+.user-profile p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.user-profile button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.user-profile button:hover {
+  background-color: #0056b3;
+}
+
+/* Chat.css (assuming you have a CSS file for the Chat component) */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 85vh;
+
+  h2 {
+    margin: 0 0 10px 0;
+  }
+
+  .messages-wrapper {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+  }
+
+  .messages {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 10px;
+  }
+
+  .no-messages {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .message {
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    border-radius: 22px;
+    margin-bottom: 5px;
+    max-width: 70%;
+  }
+
+  .sent {
+    align-self: flex-end;
+    text-align: right;
+    background-color: #d1d1d1;
+    color: #000000;
+  }
+
+  .received {
+    align-self: flex-start;
+    text-align: left;
+    background-color: #b4b1b1;
+    color: #000000;
+  }
+
+  .message-content {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 10px;
+    word-break: break-word;
+  }
+
+  .send-message-form {
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+
+    input {
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      background-color: #000000;
+      color: white;
+      cursor: pointer;
+    }
+  }
+}
+
+.send-message-form button:hover {
+  background-color: #0056b3;
+}
+
+
+/* Friends.css */
+.friends-container {
+  display: flex;
+  width: 100%;
+  height: 90vh;
+
+  .friends-list {
+    width: 20%; /* Adjust the width as needed */
+    padding: 20px;
+    background-color: #f7f7f7; /* Light background for the list */
+    border-right: 1px solid #ddd; /* Add a border between the list and profile/chat */
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+
+      li {
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+      }
+
+      li.selected-friend {
+        color: black;
+        font-weight: bold;
+      }
+    }
+  
+
+    .search-container-friend {
+      margin-bottom: 20px;
+      display: flex;
+    
+      input {
+        width: 50%;
+        padding: 10px;
+        border-radius: 20px 0 0 20px;
+        border: #000000 2px solid;
+      }
+    
+      button {
+        background-color: #000000;
+        border-radius: 0 20px 20px 0;
+        margin: 0;
+      }
+    }
+  }
+
+  .comments-section {
+    
+    .comments-list {
+      max-height: 110px;
+      overflow-y: scroll;
+      border: 1px solid grey;
+      border-radius: 12px;
+      margin: 0 0 10px 0;
+      
+      ul {
+        list-style-type: none;
+        padding-left: 10px;
+        margin: 0;
+
+        .comment {
+          display: flex;
+          flex-direction: column;
+
+          .commenter-name{
+            margin: 0;
+            font-weight: bold;
+          }
+
+          .comment-content{
+            padding-left: 10px;
+            display: flex;
+            align-items: center;
+
+            p{
+              margin: 10px 0;
+              width: 100%;
+            }
+
+            button{
+              width: fit-content;
+              align-self: end;
+            }
+          }
+        }
+      }
+    }  
+    
+    .comment-form {
+      display: flex;
+      align-items: center;
+
+      .comment-text {
+        width: 100%;
+        border: 1px solid grey;
+        border-radius: 10px;
+        padding: 10px;
+      }
+    }
+  }
+
+  .friend-profile-or-chat {
+    width: 80%; /* Adjust the width as needed */
+    padding: 20px;
+
+    .friend-profile {
+
+      .profile-header {
+        display: flex;
+        align-items: center;
+
+        .name {
+          font-size: 20px;
+          margin: 0;
+        }
+
+        .email {
+          margin: 0 20px;
+        }
+      }
+
+      .filter-buttons {
+        margin: 10px 0;
+        border-bottom: 1px solid grey;
+    
+        button{
+          background: none;
+          color: black;
+          font-size: 15px;
+        }
+    
+        .active {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+}
+
+/* .messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #f7f7f7;
+}
+
+.message {
+  margin-bottom: 5px;
+}
+
+.send-message-form {
+  display: flex;
+}
+
+.send-message-form input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.send-message-form button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-left: 10px;
+} */
+
+.dashboard{
+  display: flex;
+  flex-direction: column;
+
+  .book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(251px, 1fr));
+    gap: 20px;
+
+    .book {
+      display: flex;
+      flex-direction: row;
+      border: 1px solid grey;
+      border-radius: 12px;
+      padding: 10px;
+      position: relative;
+      /* height: fit-content; */
+      width: fit-content;
+     
+      img {
+        margin: 0 10px;
+        height: 150px; /* Set a fixed height for the image */
+      }
+
+      .details {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1; /* Ensures the details section takes up available space */
+
+        .title-author {
+          margin-bottom: auto;
+
+          .title {
+            margin: 0;
+            font-weight: bold;
+          }
+
+          .author {
+            font-size: 14px;
+          }
+        }
+
+        .progress {
+          .percent {
+            margin: 10px 0;
+          }
+
+          button {
+            margin: 0 0 10px 0;
+          }
+        }
+
+        .book-actions {
+          display: flex;
+
+          .add-to-collection {
+            align-self: end;
+            width: fit-content;
+            padding: 5px 10px;
+          }
+        }
+
+        form {
+          font-size: 14px;
+
+          .input-calc {
+            display: flex;
+            flex-direction: row;
+
+            input {
+              width: 30px;
+              margin: 10px 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.friend-profile {
+  display: flex;
+  flex-direction: column;
+
+  .book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+    max-height: 350px;
+    overflow-y: scroll;
+    border-bottom: 1px solid grey;
+    border-radius: 12px;
+
+    .book {
+      display: flex;
+      flex-direction: row;
+      border: 1px solid grey;
+      border-radius: 12px;
+      padding: 10px;
+      position: relative; /* Ensure position relative for absolute positioning */
+      /* width: 250px; Adjust width to maintain consistent card size */
+
+      img {
+        margin: 0 10px;
+        height: 150px; /* Set a fixed height for the image */
+      }
+
+      .details {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1; /* Ensures the details section takes up available space */
+
+        .title-author {
+          margin-bottom: auto;
+
+          .title {
+            margin: 0;
+            font-weight: bold;
+          }
+
+          .author {
+            font-size: 14px;
+          }
+        }
+
+        .progress {
+          .percent {
+            margin: 10px 0;
+          }
+
+          button {
+            margin: 0 0 10px 0;
+          }
+        }
+
+        .book-actions {
+          display: flex;
+
+          .add-to-collection {
+            align-self: end;
+            width: fit-content;
+            padding: 5px 10px;
+          }
+        }
+
+        form {
+          font-size: 14px;
+
+          .input-calc {
+            display: flex;
+            flex-direction: row;
+
+            input {
+              width: 30px;
+              margin: 10px 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.book-detail {
+  margin: 20px;
+  border: 1px solid grey;
+  border-radius: 12px;
+  padding: 10px;
+
+  .book-content {
+    display: flex;
+    width: 100%;
+
+    .image img {
+      max-width: 200px;
+      border-radius: 8px;
+    }
+    
+    .content {
+      flex: 1;
+      .description {
+        max-height: 150px; /* Set the fixed height */
+        overflow-y: auto; /* Enable vertical scrolling */
+        padding-right: 10px; /* Add some padding for better readability */
+      }
+    }
+  }
+}
+
+.no-margin {
+  margin: 0;
+}
+
+.notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(52, 52, 52, 0.04); /* See-through background */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+  z-index: 1000;
+
+  .notification-box {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    position: relative;
+    max-width: 300px;
+    width: 100%;
+    text-align: center;
+
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+  }
+}
+
+
+
+.notification-box p {
+  margin: 0;
+  font-size: 16px;
+}
+
+
+/* Customize the scrollbar track */
+::-webkit-scrollbar {
+  width: 5px; /* width for vertical scrollbar */
+}
+
+/* Handle (the part you can move) */
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scroll handle */
+  border-radius: 10px; /* Make it rounded */
+}
+
+/* Scrollbar handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker color when hovered */
+}
+
+/* Scrollbar track (empty space) */
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: #f1f1f1; /* Color of the track */
+}
