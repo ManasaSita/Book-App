@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://book-app-og0e.onrender.com/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://book-app-og0e.onrender.com/api' || 'http://localhost:5000/api';
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
 
 const api = axios.create({
@@ -356,10 +356,10 @@ export const searchBooks = async (query) => {
   console.log("searching----", query);
   
   try {
-    const response = await api.get(`/books/search-books`, { params: { query } });
-    console.log("response--------", response);
+    const response = await axios.get(`${GOOGLE_BOOKS_API}?q=${query}`);
+    console.log("response--------", response.data);
     
-    return response.data;
+    return response.data.items;
   } catch (error) {
     console.error('Error searching books:', error);
     throw error;
