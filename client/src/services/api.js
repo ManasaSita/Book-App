@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://book-app-og0e.onrender.com/api';
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
 
 const api = axios.create({
@@ -14,7 +14,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const user = JSON.parse(localStorage.getItem('user'));
-    const token = user?.token;
+    const token = user?.token;  
     if (token) {
       config.headers['x-auth-token'] = token;
     }
