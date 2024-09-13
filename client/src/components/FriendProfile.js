@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getFriendDetails, postComment, deleteComment, searchBooks, addBookFromSearch } from '../services/api'; 
+import { getFriendDetails, postComment, deleteCommentByCommenter, searchBooks, addBookFromSearch } from '../services/api'; 
 import { useAuth } from '../context/AuthContext';
 import Notification from './Notification';
 
@@ -29,6 +29,8 @@ const FriendProfile = ({ friendId }) => {
           new Date(a.createdAt) - new Date(b.createdAt)
         ) || [];
         setComments(sortedComments);
+        console.log("friendDetails---------", details.friendProfile, comments);
+        
       } catch (error) {
         console.error('Error fetching friend details:', error);
       }
@@ -69,14 +71,19 @@ const FriendProfile = ({ friendId }) => {
   
   const handleDeleteComment = async (commentId) => {
     try {
-      // Optimistically update the UI
-      await deleteComment({userId: userData.id, commentId});
-      setComments(prevComments => prevComments.filter(comment => comment._id !== commentId));  
+      // Call the API to delete the comment
+      await deleteCommentByCommenter({ userId: userData.id, commentId });  // Assuming deleteComment function makes a request to the backend API
+  
+      // Optimistically update the UI by removing the deleted comment from the state
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment._id !== commentId)
+      );
     } catch (error) {
       console.error('Error deleting comment:', error);
-      // Optionally: Revert UI if deletion fails (not implemented here)
+      // Optionally: Handle error or revert the UI
     }
-  };  
+  };
+  
 
   const handleSuggestBookSearch = async () => {
     try {
@@ -218,11 +225,12 @@ const FriendProfile = ({ friendId }) => {
         <div className='comments-list'>
           {comments.length > 0 ? (
             <ul>
-              {comments.map((comment, index) => (
-                <li key={index} className='comment'>
-                  <p className='commenter-name'>{comment.commenterUsername}</p>
+              {comments.map((comment) => (
+                <li id={comment._id} className='comment'>
+                  <p className='commenter-name'>{comment.commenterUsername == userData.username ? 'You' : comment.commenterUsername}</p>
                   <div className='comment-content'>
                     <p>{comment.content}</p>
+                    {/* Allow the commenter to delete their comment */}
                     {comment.commenter === userData.id && (
                       <button onClick={() => handleDeleteComment(comment._id)}>Delete</button>
                     )}

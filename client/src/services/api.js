@@ -137,11 +137,27 @@ export const getDetails = async (userId) => {
   }
 };
 
-export const deleteComment = async (commentData) => {
-  console.log("deleteComment------------", commentData);
+export const deleteCommentByTargetUser = async (commentData) => {
+  console.log("deleteCommentByTargetUser------------", commentData);
 
   try {
-    const response = await api.delete(`/auth/friends/delete-comment`, {
+    const response = await api.delete(`/auth/friends/user/delete-comment`, {
+      data: commentData,
+    });
+    console.log(response.data);
+
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    throw error;
+  }
+};
+
+export const deleteCommentByCommenter = async (commentData) => {
+  console.log("deleteCommentByCommenter------------", commentData);
+
+  try {
+    const response = await api.delete(`/auth/friends/commenter/delete-comment`, {
       data: commentData,
     });
     console.log(response.data);
