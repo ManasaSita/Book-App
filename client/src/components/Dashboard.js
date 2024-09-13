@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { updateBookProgress, updateBookStatus, getCurrentlyReadingBooks } from '../services/api';
+import { updateBookProgress, updateBookStatus, getCurrentlyReadingBooks, getComments, deleteCommentByTargetUser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
@@ -8,18 +8,33 @@ const Dashboard = () => {
   const [bookIdToUpdate, setBookIdToUpdate] = useState(null);
   const [totalPagesToUpdate, setTotalPagesToUpdate] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [activeView, setActiveView] = useState('currentlyReading');
+  const [comments, setComments] = useState([
+    // Sample comments; replace with dynamic data
+    { id: 1, message: 'Friend commented on your post', content: 'Comment Content 1', commenter: 'John Doe' },
+    { id: 2, message: 'New friend request', content: 'Friend Request Content', commenter: 'Jane Smith' },
+  ]);
   const { user } = useAuth();
   const userId = user.payload.user.id;
-  console.log("User----", userId);
 
   useEffect(() => {
     fetchCurrentlyReading();
+    fetchComments();
   }, []);
+
+  const fetchComments = async () => {
+    try {
+      const response = await getComments(userId);
+      console.log("comments---", response);
+      setComments(response)
+    } catch (error) {
+      console.error('Error fetching comments:', error.message);
+    }
+  };
 
   const fetchCurrentlyReading = async () => {
     try {
       const books = await getCurrentlyReadingBooks(userId);
-      console.log("Books======", books);
       setCurrentlyReading(books);
     } catch (error) {
       console.error('Error fetching currently reading books:', error.message);
@@ -27,27 +42,15 @@ const Dashboard = () => {
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent the form from refreshing the page
-    
+    event.preventDefault();
     try {
-      console.log("updateBookProgress-------", bookIdToUpdate, totalPagesToUpdate, pagesRead, userId);
-      
-      // Calculate progress as a percentage and ensure it's capped at 100
       const progress = Math.min(Math.round((Number(pagesRead) / totalPagesToUpdate) * 100), 100);
-      console.log("progress---", progress);
-
-      // Call API to update progress
       await updateBookProgress({userId, bookId:bookIdToUpdate, progress, pagesRead});
-
-      // Update the local state with the new progress
       setCurrentlyReading(currentlyReading.map(book =>
         book._id === bookIdToUpdate ? { ...book, progress: progress } : book
       ));
-
-      // Hide the input field after updating
       setIsUpdating(false);
-      setPagesRead(''); // Clear the input field after submit
-
+      setPagesRead('');
     } catch (error) {
       console.error('Error updating progress:', error);
     }
@@ -68,50 +71,102 @@ const Dashboard = () => {
     setIsUpdating(true);
   };
 
+  const handleDeleteComment = async (commentId) => {
+    console.log("handleDeleteComment--------", commentId, userId);
+    
+    try {
+      // Call the API to delete the comment
+      await deleteCommentByTargetUser({ userId, commentId });  // Assuming deleteComment function makes a request to the backend API
+  
+      // Optimistically update the UI by removing the deleted comment from the state
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.id !== commentId)
+      );
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      // Optionally: Handle error or revert the UI
+    }
+  };
+  
+
   return (
     <div className='dashboard'>
-      <h3>Currently Reading</h3> 
-      <div className="book-grid">
-        {currentlyReading.length > 0 ? (
-          currentlyReading.map(book => (
-            
-              <div className='book' id={book._id}>
-                <img src={book.thumbnail} alt={book.title} />
-                <div className='details'>
-                  <div className='title-author'>
-                    <p className='title'>{book.title}</p>
-                    <p className='author'>by <strong>{book.author}</strong></p>
-                  </div>
-                  
-
-                  {isUpdating && bookIdToUpdate === book._id ? (
-                    <form onSubmit={handleSubmit}>
-                      Pages Read:
-                      <div className='input-calc'>
-                        <input type="number" value={book.pagesRead} onChange={(e) => setPagesRead(e.target.value)} min="0" max={book.pageCount}/>
-                        <p> / {book.pageCount}</p>
-                      </div>
-                      
-                      <button type="submit">Update Progress</button>
-                    </form>
-                  ) : (
-                    <div className='progress'>
-                      <div className='percent'>Progress: {book.progress}%</div>
-                      <button onClick={() => handleUpdateClick(book._id, book.pageCount)}> Update Progress</button>
-                      <button onClick={() => handleFinishBook(book._id)}>I've finished</button>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-          ))
-        ) : (
+      <div className="left-side">
+        <ul>
+          <li 
+            onClick={() => setActiveView('currentlyReading')} 
+            className={activeView === 'currentlyReading' ? 'active' : ''}>
+              Currently Reading
+          </li>
+          <li 
+            onClick={() => setActiveView('comments')} 
+            className={activeView === 'comments' ? 'active' : ''}>
+            Comments
+          </li>
+        </ul>
+      </div>
+      <div className="right-side">
+        {activeView === 'currentlyReading' ? (
           <div>
-            <p>No book is marked as Reading. Start reading...!</p>
+            <h3>Currently Reading</h3>
+            <div className="book-grid">
+              {currentlyReading ? (
+                currentlyReading.map(book => (
+                  <div className='book' key={book._id}>
+                    <img src={book.thumbnail} alt={book.title} />
+                    <div className='details'>
+                      <div className='title-author'>
+                        <p className='title'>{book.title}</p>
+                        <p className='author'>by <strong>{book.author}</strong></p>
+                      </div>
+                      {isUpdating && bookIdToUpdate === book._id ? (
+                        <form onSubmit={handleSubmit}>
+                          Pages Read:
+                          <div className='input-calc'>
+                            <input 
+                              type="number" 
+                              value={pagesRead} 
+                              onChange={(e) => setPagesRead(e.target.value)} 
+                              min="0" 
+                              max={book.pageCount}
+                            />
+                            <p> / {book.pageCount}</p>
+                          </div>
+                          <button type="submit">Update Progress</button>
+                        </form>
+                      ) : (
+                        <div className='progress'>
+                          <div className='percent'>Progress: {book.progress}%</div>
+                          <button onClick={() => handleUpdateClick(book._id, book.pageCount)}>Update Progress</button>
+                          <button onClick={() => handleFinishBook(book._id)}>I've finished</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No book is marked as Reading. Start reading...!</p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="comments">
+            <h3>Comments on Your Profile</h3>
+            <ul>
+              {comments.map((comment) => (
+                <li id={comment.id} className="comments-item" key={comment._id}>
+                  <p className='commenter'><strong>{comment.commenterUsername}</strong></p>
+                  <div className='comment-content'>
+                    <p className='content'>{comment.content}</p>
+                    {/* Call handleDeleteComment with the comment's ID */}
+                    <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
-
     </div>
   );
 };

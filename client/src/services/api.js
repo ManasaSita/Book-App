@@ -137,11 +137,11 @@ export const getDetails = async (userId) => {
   }
 };
 
-export const deleteComment = async (commentData) => {
-  console.log("deleteComment------------", commentData);
+export const deleteCommentByTargetUser = async (commentData) => {
+  console.log("deleteCommentByTargetUser------------", commentData);
 
   try {
-    const response = await api.delete(`/auth/friends/delete-comment`, {
+    const response = await api.delete(`/auth/friends/user/delete-comment`, {
       data: commentData,
     });
     console.log(response.data);
@@ -153,6 +153,33 @@ export const deleteComment = async (commentData) => {
   }
 };
 
+export const deleteCommentByCommenter = async (commentData) => {
+  console.log("deleteCommentByCommenter------------", commentData);
+
+  try {
+    const response = await api.delete(`/auth/friends/commenter/delete-comment`, {
+      data: commentData,
+    });
+    console.log(response.data);
+
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    throw error;
+  }
+};
+
+// New API call for fetching comments
+export const getComments = async (userId) => {
+  try {
+    const response = await api.get(`/auth/friends/comments/${userId}`);
+    console.log("getComments response:", response.data);
+    return response.data.comments;
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    throw error;
+  }
+};
 
 // Message-related API calls
 export const fetchMessages = async (senderId,friendId) => {
