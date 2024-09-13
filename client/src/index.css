@@ -249,7 +249,7 @@ body {
   .filter-buttons {
     margin: 10px 0;
     border-bottom: 1px solid grey;
-    top: 74px;
+    top: 66px;
     position: sticky;
     width: -webkit-fill-available;
     background: white;
