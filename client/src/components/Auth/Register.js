@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { register } from '../../services/api'; // Ensure the register function is correctly imported from your API file
 
 const Register = ({ onRegisterSuccess }) => {
@@ -8,6 +9,7 @@ const Register = ({ onRegisterSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login: authenticateUser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,13 +22,8 @@ const Register = ({ onRegisterSuccess }) => {
       console.log("response------", response);
       
       // Assuming the backend returns a token on successful registration
-      localStorage.setItem('token', response.token);
-
-      // Call the onRegisterSuccess callback to notify parent component
-      if (onRegisterSuccess) {
-        onRegisterSuccess();
-        navigate('/dashboard');
-      }
+      authenticateUser(response);
+      navigate('/dashboard');
     } catch (err) {
       setError('Registration failed. Please try again.');
     }
