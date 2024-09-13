@@ -3,7 +3,7 @@ const router = express.Router();
 const { register, login } = require('../controllers/authController');
 const { sendFriendRequest, fetchFriendRequests, respondToFriendRequest, fetchFriends, searchUsers, 
     getFriendDetails, postComment, getDetails, deleteComment, 
-    fetchMessages, sendMessage } = require('../controllers/friendController'); // Import new controller methods
+    fetchMessages, sendMessage, getComments } = require('../controllers/friendController'); // Import new controller methods
 const authMiddleware = require('../middleware/authMiddleware');
 
 // @route   POST /api/auth/register
@@ -31,5 +31,6 @@ router.get('/profile/:userId', getDetails);
 router.delete('/friends/delete-comment', deleteComment);
 router.get('/friends/messages/:friendId', fetchMessages);
 router.post('/friends/messages', sendMessage);
+router.get('/friends/comments/:id', getComments);
 
 module.exports = router;
