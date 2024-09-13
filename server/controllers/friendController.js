@@ -368,51 +368,50 @@ exports.getDetails = async (req, res) => {
 };
 
 // Delete Comment
-exports.deleteComment = async (req, res) => {
-  const { userId, friendId, commentId } = req.body;
-  // const userId = req.user.id;
-  console.log("deleteComment---------", req.body);
+// Delete Comment by Target User (Dashboard)
+exports.deleteCommentByTargetUser = async (req, res) => {
+  const { userId, commentId } = req.body; // userId refers to the targetUser
+  console.log("deleteCommentByTargetUser----------controller-----------",  req.body);
   
-
   try {
-    const friendDoc = await Friends.findOneAndUpdate(
-      { 
-        $or: [
-          { 'comments.commenter': userId }, 
-          { 'comments.targetUser': userId }
-        ] 
-      },
-      { $pull :{ comments: { _id: commentId } } },
-      { new: true }  // Return the updated document
+    const updatedFriendDoc = await Friends.findOneAndUpdate(
+      { 'comments.targetUser': userId, 'comments._id': commentId },
+      { $pull: { comments: { _id: commentId } } },
+      { new: true }
     ).select('comments');
 
-    console.log("after delete-------", friendDoc);
-
-    if (!friendDoc) {
-      return res.status(403).json({ message: 'Unauthorized to delete this comment' });
+    if (!updatedFriendDoc) {
+      return res.status(404).json({ message: 'Comment not found or unauthorized to delete' });
     }
 
-     await friendDoc.save();
+    // Return the updated comments list
+    return res.status(200).json({ comments: updatedFriendDoc.comments });
+  } catch (error) {
+    console.error('Error deleting comment by target user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
-    // Add the username to each comment
-    const commenterIds = friendDoc.comments.map(comment => comment.commenter);
-    const commenterProfiles = await Users.find({ _id: { $in: commenterIds } }).select('username');
-    const commenterMap = commenterProfiles.reduce((map, user) => {
-      map[user._id] = user.username;
-      return map;
-    }, {});
+// Delete Comment by Commenter (FriendProfile)
+exports.deleteCommentByCommenter = async (req, res) => {
+  const { userId, commentId } = req.body; // userId refers to the commenter
 
-    const commentsWithUsernames = friendDoc.comments.map(comment => ({
-      ...comment.toObject(),
-      commenterUsername: commenterMap[comment.commenter] || 'Unknown'
-    }));
-    console.log("afterDelete-------", commentsWithUsernames.length);
+  try {
+    const updatedFriendDoc = await Friends.findOneAndUpdate(
+      { 'comments.commenter': userId, 'comments._id': commentId },
+      { $pull: { comments: { _id: commentId } } },
+      { new: true }
+    ).select('comments');
+
+    if (!updatedFriendDoc) {
+      return res.status(404).json({ message: 'Comment not found or unauthorized to delete' });
+    }
 
     // Return the updated comments list
-    return res.status(200).json({ comments: commentsWithUsernames });
+    return res.status(200).json({ comments: updatedFriendDoc.comments });
   } catch (error) {
-    console.error('Error deleting comment:', error);
-    res.status(500).send('Server error');
+    console.error('Error deleting comment by commenter:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

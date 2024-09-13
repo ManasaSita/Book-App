@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { register, login } = require('../controllers/authController');
 const { sendFriendRequest, fetchFriendRequests, respondToFriendRequest, fetchFriends, searchUsers, 
-    getFriendDetails, postComment, getDetails, deleteComment, 
+    getFriendDetails, postComment, getDetails, deleteCommentByCommenter, deleteCommentByTargetUser,
     fetchMessages, sendMessage, getComments } = require('../controllers/friendController'); // Import new controller methods
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -28,7 +28,8 @@ router.get('/search', searchUsers);
 router.get('/friends/details/:id?', getFriendDetails);
 router.post('/friends/comment', postComment);
 router.get('/profile/:userId', getDetails);
-router.delete('/friends/delete-comment', deleteComment);
+router.delete('/friends/user/delete-comment', deleteCommentByTargetUser);
+router.delete('/friends/commenter/delete-comment', deleteCommentByCommenter);
 router.get('/friends/messages/:friendId', fetchMessages);
 router.post('/friends/messages', sendMessage);
 router.get('/friends/comments/:id', getComments);

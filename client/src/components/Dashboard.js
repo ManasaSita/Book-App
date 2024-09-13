@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { updateBookProgress, updateBookStatus, getCurrentlyReadingBooks, getComments, deleteComment } from '../services/api';
+import { updateBookProgress, updateBookStatus, getCurrentlyReadingBooks, getComments, deleteCommentByTargetUser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
@@ -9,7 +9,11 @@ const Dashboard = () => {
   const [totalPagesToUpdate, setTotalPagesToUpdate] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeView, setActiveView] = useState('currentlyReading');
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState([
+    // Sample comments; replace with dynamic data
+    { id: 1, message: 'Friend commented on your post', content: 'Comment Content 1', commenter: 'John Doe' },
+    { id: 2, message: 'New friend request', content: 'Friend Request Content', commenter: 'Jane Smith' },
+  ]);
   const { user } = useAuth();
   const userId = user.payload.user.id;
 
@@ -68,15 +72,22 @@ const Dashboard = () => {
   };
 
   const handleDeleteComment = async (commentId) => {
+    console.log("handleDeleteComment--------", commentId, userId);
+    
     try {
-      // Optimistically update the UI
-      await deleteComment({userId, commentId});
-      setComments(prevComments => prevComments.filter(comment => comment._id !== commentId));  
+      // Call the API to delete the comment
+      await deleteCommentByTargetUser({ userId, commentId });  // Assuming deleteComment function makes a request to the backend API
+  
+      // Optimistically update the UI by removing the deleted comment from the state
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.id !== commentId)
+      );
     } catch (error) {
       console.error('Error deleting comment:', error);
-      // Optionally: Revert UI if deletion fails (not implemented here)
+      // Optionally: Handle error or revert the UI
     }
-  }; 
+  };
+  
 
   return (
     <div className='dashboard'>
@@ -90,7 +101,7 @@ const Dashboard = () => {
           <li 
             onClick={() => setActiveView('comments')} 
             className={activeView === 'comments' ? 'active' : ''}>
-            comments
+            Comments
           </li>
         </ul>
       </div>
@@ -140,14 +151,19 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="comments">
-            <h3>comments</h3>
-            {comments.map(comment => (
-              <div key={comment.id} className="comments-item">
-                <p className='commenter'><strong>{comment.commenterUsername}</strong></p>
-                <p className='content'>{comment.content}</p>
-                <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
-              </div>
-            ))}
+            <h3>Comments on Your Profile</h3>
+            <ul>
+              {comments.map((comment) => (
+                <li id={comment.id} className="comments-item" key={comment._id}>
+                  <p className='commenter'><strong>{comment.commenterUsername}</strong></p>
+                  <div className='comment-content'>
+                    <p className='content'>{comment.content}</p>
+                    {/* Call handleDeleteComment with the comment's ID */}
+                    <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
