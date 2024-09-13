@@ -15,7 +15,7 @@ const Profile = () => {
   return (
     <div className="profile-page">
       <div className="user-profile">
-        <h2>User Profile</h2>
+        <h2>Your Profile</h2>
         <p>Username: {userData.username}</p>
         <p>Email: {userData.email}</p>
         <button className='nav-link logout-btn' onClick={handleLogout}>Logout</button>

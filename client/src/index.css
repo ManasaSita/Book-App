@@ -388,15 +388,17 @@ button:hover {
 
 .user-profile button {
   padding: 10px 20px;
-  background-color: #007bff;
+  background-color: black;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  text-align: center;
 }
 
 .user-profile button:hover {
-  background-color: #0056b3;
+  background-color: #fefefe;
+  color: #000;
 }
 
 /* Chat.css (assuming you have a CSS file for the Chat component) */

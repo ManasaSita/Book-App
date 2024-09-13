@@ -35,6 +35,7 @@ const Layout = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+    setDropdownOpen(false);  // Close dropdown after logging out
   };
 
   const toggleDropdown = () => {
@@ -81,7 +82,7 @@ const Layout = () => {
                     Friends
                   </Link>
                   <Link
-                    to="/friends/messages"  // Add a new link for the Chat page
+                    to="/friends/messages"
                     onClick={() => handleNavClick('chat')}
                     className={selectedNav === 'chat' ? 'selected-nav' : 'nav-link'}
                   >
@@ -96,8 +97,19 @@ const Layout = () => {
                     </div>
                     {isDropdownOpen && (
                       <div className="dropdown-menu">
-                        <Link to="/profile" className="dropdown-item">My Profile</Link>
-                        <p onClick={handleLogout} className="dropdown-item no-margin">Logout</p>
+                        <Link 
+                          to="/profile" 
+                          className="dropdown-item" 
+                          onClick={() => setDropdownOpen(false)}  // Close after selecting My Profile
+                        >
+                          My Profile
+                        </Link>
+                        <p 
+                          onClick={handleLogout} 
+                          className="dropdown-item no-margin"
+                        >
+                          Logout
+                        </p>
                       </div>
                     )}
                   </div>
