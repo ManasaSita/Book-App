@@ -461,3 +461,44 @@ exports.sendMessage = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+exports.getComments = async (req, res) => {
+  console.log("getComments controller called");
+
+  try {
+    const userId = req.params.id;
+    console.log("getComments---------controller---", userId);
+
+    // Find all friend documents where the current user is the targetUser in comments
+    const friendDocuments = await Friends.find({
+      'comments.targetUser': userId
+    }).populate({
+      path: 'comments.commenter',
+      select: 'username' // Only fetch the username of the commenter
+    });
+
+    // Extract and format the comments
+    let comments = [];
+    friendDocuments.forEach(doc => {
+      doc.comments.forEach(comment => {
+        if (comment.targetUser.toString() === userId) {
+          comments.push({
+            id: comment._id,
+            commenterUsername: comment.commenter.username,
+            content: comment.content,
+            createdAt: comment.createdAt,
+            bookLink: comment.bookLink // Include this if you want to fetch book details
+          });
+        }
+      });
+    });
+
+    // Sort comments by createdAt in descending order (most recent first)
+    comments.sort((a, b) => b.createdAt - a.createdAt);
+
+    res.status(200).json({ comments });
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

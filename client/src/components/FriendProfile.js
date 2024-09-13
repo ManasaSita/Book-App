@@ -70,7 +70,7 @@ const FriendProfile = ({ friendId }) => {
   const handleDeleteComment = async (commentId) => {
     try {
       // Optimistically update the UI
-      await deleteComment({userId: userData.id, friendId, commentId});
+      await deleteComment({userId: userData.id, commentId});
       setComments(prevComments => prevComments.filter(comment => comment._id !== commentId));  
     } catch (error) {
       console.error('Error deleting comment:', error);
