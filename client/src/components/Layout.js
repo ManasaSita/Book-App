@@ -45,6 +45,7 @@ const Layout = () => {
 
   const handleNavClick = (type) => {
     setSelectedNav(type);
+    setDropdownOpen(false);
   };
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
