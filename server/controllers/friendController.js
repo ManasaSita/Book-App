@@ -63,7 +63,7 @@ exports.respondToFriendRequest = async (req, res) => {
     // console.log("request.receiver-------", request.receiver);
     // console.log("senderId----------", senderId);
     
-    if (request.receiver.toString() !== senderId) {
+    if (request.sender.toString() !== senderId) {
       return res.status(403).json({ message: 'Unauthorized action' });
     }
 
