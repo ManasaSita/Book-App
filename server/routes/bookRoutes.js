@@ -11,7 +11,6 @@ router.use(authMiddleware);
 router.get('/:bookId/status', getBookWithStatus);
 router.post('/', createBook);
 router.put('/:id', updateBook);
-
-
+router.get('/suggested/:bookId', getBook);
 
 module.exports = router;

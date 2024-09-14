@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { updateBookProgress, updateBookStatus, getCurrentlyReadingBooks, getComments, deleteCommentByTargetUser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
   const [currentlyReading, setCurrentlyReading] = useState([]);
@@ -35,7 +36,13 @@ const Dashboard = () => {
   const fetchCurrentlyReading = async () => {
     try {
       const books = await getCurrentlyReadingBooks(userId);
-      setCurrentlyReading(books);
+      if(books.message){
+        console.log("books--------", books);
+        
+        setCurrentlyReading([]);
+      } else {
+        setCurrentlyReading(books);
+      }
     } catch (error) {
       console.error('Error fetching currently reading books:', error.message);
     }
@@ -88,6 +95,31 @@ const Dashboard = () => {
     }
   };
   
+  const renderCommentContent = (comment) => {
+    const suggestPattern = /I suggest you read "(.*?)"\. Click here to see details:/;
+    const match = comment.content.match(suggestPattern);
+    
+    console.log("suggestedbook", comment);
+    
+    if (match) {
+      const bookTitle = match[1];
+      return (
+        <>
+          I suggest you read "{' '}
+          <Link 
+            to={{
+              pathname: `/books/suggested/${comment.bookLink}`,
+              state: { bookTitle: bookTitle }
+            }}
+          >
+            {bookTitle}
+          </Link>
+          "
+        </>
+      );
+    }
+    return comment.content;
+  };
 
   return (
     <div className='dashboard'>
@@ -152,18 +184,23 @@ const Dashboard = () => {
         ) : (
           <div className="comments">
             <h3>Comments on Your Profile</h3>
-            <ul>
-              {comments.map((comment) => (
-                <li id={comment.id} className="comments-item" key={comment._id}>
-                  <p className='commenter'><strong>{comment.commenterUsername}</strong></p>
-                  <div className='comment-content'>
-                    <p className='content'>{comment.content}</p>
-                    {/* Call handleDeleteComment with the comment's ID */}
-                    <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className='comments-list'>
+              {comments.length > 0 ? (
+                <ul>
+                  {comments.map((comment) => (
+                    <li key={comment._id} className='comment'>
+                      <p className='commenter'><strong>{comment.commenterUsername}</strong></p>
+                      <div className='comment-content'>
+                        <p>{renderCommentContent(comment)}</p>
+                        <button onClick={() => handleDeleteComment(comment._id)}>Delete</button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No Comments Yet!</p>
+              )}
+            </div>
           </div>
         )}
       </div>

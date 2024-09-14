@@ -6,15 +6,14 @@ exports.createBook = async (req, res) => {
   try {
     console.log("user--", req);
     
-    const { title, author, description, rating, status } = req.body;
+    const { title, author, description, thumbnail, averageRating, pageCount } = req.body;
     const newBook = new Books({
       title,
       author,
       description,
-      // // isbn,
-      // rating,
-      // status,
-      // user: req.user.id
+      thumbnail,
+      averageRating,
+      pageCount,
     });
     const book = await newBook.save();
     res.status(201).json(book);
@@ -25,10 +24,15 @@ exports.createBook = async (req, res) => {
 };
 
 // Get all books for a user
-exports.getBooks = async (req, res) => {
+exports.getBook = async (req, res) => {
   try {
-    console.log("getBooks------", req.user.id);
-    const books = await Books.find({});
+    console.log("getBook------", req.params);
+    const {bookId} = req.params;
+    console.log(bookId);
+    
+    const books = await Books.findById(bookId);
+    console.log(books);
+    
     res.json(books);
   } catch (err) {
     console.error(err);
