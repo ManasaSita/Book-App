@@ -50,6 +50,7 @@ function AppContent() {
         <Route path="mybooks" element={<ProtectedRoute><BookList /></ProtectedRoute>} />
         <Route path="add-book" element={<ProtectedRoute><AddBook /></ProtectedRoute>} />
         <Route path="books/:bookId" element={<ProtectedRoute><BookDetail /></ProtectedRoute>} />
+        <Route path="books/suggested/:bookId" element={<ProtectedRoute><BookDetail /></ProtectedRoute>} />
         <Route path="friends/:id" element={<ProtectedRoute><FriendProfile /></ProtectedRoute>} />
         <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
         <Route path="friends/messages" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />

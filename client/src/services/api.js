@@ -231,9 +231,11 @@ export const updateBook = async (id, bookData) => {
   }
 };
 
-export const getBook = async (id) => {
+export const getBook = async (bookId) => {
   try {
-    const response = await api.get(`/books/${id}`);
+    const response = await api.get(`/books/suggested/${bookId}`);
+    console.log(response);
+    
     return response.data;
   } catch (error) {
     console.error('Error fetching book:', error);

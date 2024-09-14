@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getBookWithStatus, addReview, getReviews, editReview, deleteReview } from '../services/api';
-import { useParams, Link } from 'react-router-dom';
+import { getBookWithStatus, addReview, getReviews, editReview, deleteReview, getBook, addBookFromSearch } from '../services/api'; // addToCollection method
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Notification from './Notification';
 
 const BookDetail = () => {
   const [book, setBook] = useState(null);
@@ -13,20 +14,44 @@ const BookDetail = () => {
   const { bookId } = useParams();
   const { user } = useAuth();
   const userId = user.payload.user.id;
+  const location = useLocation();
+  const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
-    fetchBook();
+    // Determine which fetch method to use based on the URL
+    if (location.pathname.includes('suggested')) {
+      fetchSuggestedBook();
+    } else {
+      fetchBookWithStatus();
+    }
     fetchReview();
-  }, [bookId]);
+  }, [bookId, location.pathname]);
 
-  const fetchBook = async () => {
+  const fetchBookWithStatus = async () => {
     try {
       const fetchedBook = await getBookWithStatus(bookId, userId);
       setBook(fetchedBook);
       setReviewText(fetchedBook.review || '');
       setReviewToEdit(fetchedBook.review || '');
     } catch (error) {
-      console.error('Error fetching book:', error);
+      console.error('Error fetching book with status:', error);
+    }
+  };
+
+  const fetchSuggestedBook = async () => {
+    try {
+      const suggestedBook = await getBook(bookId);
+      const bookDetails = {
+        title: suggestedBook.title,
+        author: suggestedBook.authors ? suggestedBook.authors.join(', ') : 'Unknown',
+        description: suggestedBook.description,
+        thumbnail: suggestedBook ? suggestedBook.thumbnail : null,
+        averageRating: suggestedBook.averageRating || null,
+        pageCount: suggestedBook.pageCount || null,
+      };
+      setBook(bookDetails);
+    } catch (error) {
+      console.error('Error fetching suggested book:', error);
     }
   };
 
@@ -43,7 +68,7 @@ const BookDetail = () => {
       await addReview(userId, bookId, reviewText);
       setReviewText('');
       setIsAddingReview(false);
-      fetchBook();
+      fetchBookWithStatus();
     } catch (error) {
       console.error('Error adding review:', error);
     }
@@ -54,7 +79,7 @@ const BookDetail = () => {
       await editReview(userId, bookId, reviewText);
       setIsEditing(false);
       setReviewToEdit(reviewText);
-      fetchBook();
+      fetchBookWithStatus();
     } catch (error) {
       console.error('Error editing review:', error);
     }
@@ -65,14 +90,23 @@ const BookDetail = () => {
       await deleteReview(userId, bookId);
       setReviewText('');
       setReviewToEdit('');
-      fetchBook();
+      fetchBookWithStatus();
     } catch (error) {
       console.error('Error deleting review:', error);
     }
   };
-  
+
   const toggleShowMore = () => {
     setShowMore(!showMore);
+  };
+
+  const handleAddToCollection = async () => {
+    try {
+      await addBookFromSearch(book, userId);
+      setShowNotification(true);
+    } catch (error) {
+      console.error('Error adding book to collection:', error);
+    }
   };
 
   if (!book) return <div>Loading...</div>;
@@ -95,61 +129,77 @@ const BookDetail = () => {
             Description:
             <p className='description'>{displayText}</p>
             {isTruncated && (
-              <button onClick={() => setShowMore(!showMore)}>
+              <button onClick={toggleShowMore}>
                 {showMore ? 'Show Less' : 'Show More'}
               </button>
             )}
           </div>
-          
-          <p>Rating: {book.rating}</p>
-          <p>Status: {book.status}</p>
+          <p>Rating: {book.averageRating}</p>
+          <p>Page Count: {book.pageCount}</p>
+          {location.pathname.includes('suggested') ? null : (
+            <>
+              <p>Status: {book.status}</p>
 
-            {reviewToEdit ? (
+              {reviewToEdit ? (
                 <div className="review-container">
-                {isEditing ? (
+                  {isEditing ? (
                     <div>
-                    <input
+                      <input
                         type='text'
                         placeholder="Edit your review"
                         value={reviewText}
                         onChange={handleReviewChange}
-                    />
-                    <button onClick={handleEditReview}>Save Review</button>
-                    <button onClick={() => setIsEditing(false)}>Cancel</button>
+                      />
+                      <button onClick={handleEditReview}>Save Review</button>
+                      <button onClick={() => setIsEditing(false)}>Cancel</button>
                     </div>
-                ) : (
+                  ) : (
                     <div>
-                    <h3>Your Review:</h3>
-                    <p>{reviewToEdit}</p>
-                    <button onClick={() => setIsEditing(true)}>Edit Review</button>
-                    <button onClick={handleDeleteReview}>Delete Review</button>
+                      <h3>Your Review:</h3>
+                      <p>{reviewToEdit}</p>
+                      <button onClick={() => setIsEditing(true)}>Edit Review</button>
+                      <button onClick={handleDeleteReview}>Delete Review</button>
                     </div>
-                )}
+                  )}
                 </div>
-            ) : (
+              ) : (
                 <div>
-                {isAddingReview ? (
+                  {isAddingReview ? (
                     <div>
-                    <input
+                      <input
                         type='text'
                         placeholder="Add your review"
                         value={reviewText}
                         onChange={handleReviewChange}
-                    />
-                    <button onClick={handleAddReview}>Add Review</button>
-                    <button onClick={() => setIsAddingReview(false)}>Cancel</button>
+                      />
+                      <button onClick={handleAddReview}>Add Review</button>
+                      <button onClick={() => setIsAddingReview(false)}>Cancel</button>
                     </div>
-                ) : (
+                  ) : (
                     <button onClick={() => setIsAddingReview(true)}>Add Review</button>
-                )}
+                  )}
                 </div>
-            )}
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      <Link to="/books">
-        <button>Back to List</button>
-      </Link>
+      {location.pathname.includes('suggested') ? (
+        <>
+          <button onClick={handleAddToCollection}>Add to Collection</button>
+          {showNotification && (
+            <Notification
+              message="Book added to your collection!"
+              onClose={() => setShowNotification(false)}
+            />
+          )}
+        </>
+      ) : (
+        <Link to="/books">
+          <button>Back to List</button>
+        </Link>
+      )}
     </div>
   );
 };

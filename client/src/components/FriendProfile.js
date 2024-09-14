@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getFriendDetails, postComment, deleteCommentByCommenter, searchBooks, addBookFromSearch } from '../services/api'; 
+import { Link } from 'react-router-dom';
+import { getFriendDetails, postComment, deleteCommentByCommenter, searchBooks, addBookFromSearch, createBook } from '../services/api'; 
 import { useAuth } from '../context/AuthContext';
 import Notification from './Notification';
 
@@ -15,9 +16,11 @@ const FriendProfile = ({ friendId }) => {
   const [suggestBookResults, setSuggestBookResults] = useState([]);
   const [isSuggestingBook, setIsSuggestingBook] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
-
+  const [isBookSearchOpen, setIsBookSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [suggestedBook, setSuggestedBook] = useState([]);
   // console.log("userData-------",  userData);
-  
 
   useEffect(() => {
     const fetchFriendDetails = async () => {
@@ -85,10 +88,21 @@ const FriendProfile = ({ friendId }) => {
   };
   
 
-  const handleSuggestBookSearch = async () => {
+  const handleOpenBookSearch = () => {
+    setIsBookSearchOpen(true);
+  };
+
+  const handleCloseBookSearch = () => {
+    setIsBookSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
+  const handleSearchBooks = async (e) => {
+    e.preventDefault();
     try {
-      const results = await searchBooks(suggestBookQuery);
-      setSuggestBookResults(results);
+      const results = await searchBooks(searchQuery);
+      setSearchResults(results);
     } catch (error) {
       console.error('Error searching books:', error);
     }
@@ -96,29 +110,85 @@ const FriendProfile = ({ friendId }) => {
 
   const handleSuggestBook = async (book) => {
     try {
-      const bookLink = `/books/${book.id}`;
-      const commentText = `I suggest you read [${book.volumeInfo.title}](${bookLink})`;
+      const bookDetails = {
+        title: book.volumeInfo.title,
+        author: book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown',
+        description: book.volumeInfo.description,
+        thumbnail: book.volumeInfo.imageLinks ? book.volumeInfo.imageLinks.thumbnail : null,
+        averageRating: book.volumeInfo.averageRating || null,
+        pageCount: book.volumeInfo.pageCount || null,
+      };
+
+      const newBook = await createBook(bookDetails);
+
+      console.log("bookDetails-----", bookDetails, newBook);
+
+      const upDatedBookDetails = {
+        ...bookDetails,
+        bookId: newBook._id,
+      };
+
+      const commentText = `I suggest you read "${bookDetails.title}". Click here to see details:`;
 
       const commentData = { 
         commenterId: userData.id, 
         friendId: friendId, 
-        text: commentText 
+        text: commentText,
+        bookId: upDatedBookDetails.bookId
       };
 
-      await postComment(commentData);
+      console.log("commentData-----", commentData);
 
-      setComments(prevComments => [...prevComments, { 
-        commenterUsername: userData.username, 
-        content: commentText 
-      }]);
+      const response = await postComment(commentData);
 
-      setSuggestBookQuery('');
-      setSuggestBookResults([]);
-      setIsSuggestingBook(false);
+      if (response && response.commentsWithUsernames) {
+        const sortedComments = response.commentsWithUsernames.sort((a, b) => 
+          new Date(a.createdAt) - new Date(b.createdAt)
+        ) || [];
+        setComments(sortedComments);
+      } else {
+        // Fallback: optimistically add the new comment
+        const newCommentAdded = {
+          _id: Date.now(),
+          commenter: userData.id,
+          commenterUsername: userData.username,
+          content: commentText,
+          bookDetails: bookDetails,
+          createdAt: new Date().toISOString(),
+        };
+        setComments(prevComments => [...prevComments, newCommentAdded]);
+      }
 
+      handleCloseBookSearch();
     } catch (error) {
       console.error('Error suggesting book:', error);
     }
+  };
+
+  const renderCommentContent = (comment) => {
+    const suggestPattern = /I suggest you read "(.*?)"\. Click here to see details:/;
+    const match = comment.content.match(suggestPattern);
+    
+    console.log("suggestedbook", comment);
+    
+    if (match) {
+      const bookTitle = match[1];
+      return (
+        <>
+          I suggest you read "{' '}
+          <Link 
+            to={{
+              pathname: `/books/suggested/${comment.bookLink}`,
+              state: { bookTitle: bookTitle }
+            }}
+          >
+            {bookTitle}
+          </Link>
+          "
+        </>
+      );
+    }
+    return comment.content;
   };
 
   const handleAddBookToMyCollection = async (book) => {
@@ -226,11 +296,10 @@ const FriendProfile = ({ friendId }) => {
           {comments.length > 0 ? (
             <ul>
               {comments.map((comment) => (
-                <li id={comment._id} className='comment'>
-                  <p className='commenter-name'>{comment.commenterUsername == userData.username ? 'You' : comment.commenterUsername}</p>
+                <li key={comment._id} className='comment'>
+                  <p className='commenter-name'>{comment.commenterUsername === userData.username ? 'You' : comment.commenterUsername}</p>
                   <div className='comment-content'>
-                    <p>{comment.content}</p>
-                    {/* Allow the commenter to delete their comment */}
+                    <p>{renderCommentContent(comment)}</p>
                     {comment.commenter === userData.id && (
                       <button onClick={() => handleDeleteComment(comment._id)}>Delete</button>
                     )}
@@ -243,39 +312,44 @@ const FriendProfile = ({ friendId }) => {
           )}
         </div>
 
-
-        {/* Suggest a Book Section */}
-        {isSuggestingBook && (
-          <div className="suggest-book-section">
-            <input
-              type="text"
-              value={suggestBookQuery}
-              onChange={(e) => setSuggestBookQuery(e.target.value)}
-              placeholder="Search for books to suggest..."
-            />
-            <button onClick={handleSuggestBookSearch}>Search</button>
-
-            {suggestBookResults.length > 0 && (
+        {/* Book Search Pop-up */}
+        {isBookSearchOpen && (
+          <div className="book-search-popup">
+            <div className="book-search-content">
+              <button className="close-button" onClick={handleCloseBookSearch}>X</button>
+              <h3>Suggest a Book</h3>
+              <form onSubmit={handleSearchBooks}>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for books..."
+                />
+                <button type="submit">Search</button>
+              </form>
               <div className="search-results">
-                <div className="search-results-header">
-                  <h3>Search Results</h3>
-                  <button className="close-button" onClick={handleClearSearch}>X</button>
-                </div>
-                {suggestBookResults.map(book => (
-                  <div key={book.id} className="book-card">
-                    <img src={book.volumeInfo.imageLinks?.thumbnail} alt={book.volumeInfo.title} />
-                    <p>{book.volumeInfo.title}</p>
-                    <button onClick={() => handleSuggestBook(book)}>Suggest this Book</button>
+                {searchResults.map(book => (
+                  <div key={book.id} className="book">
+                    <img 
+                      src={book.volumeInfo.imageLinks?.thumbnail || "/book_thumbnail.jpg"} 
+                      alt={book.volumeInfo.title} 
+                    />
+                    <div className="details">
+                      <p className="title">{book.volumeInfo.title}</p>
+                      <p className="author">by {book.volumeInfo.authors?.join(', ') || 'Unknown'}</p>
+                      <button onClick={() => handleSuggestBook(book)}>Suggest this Book</button>
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
+            </div>
           </div>
         )}
         
         {/* Comment Form */}
         <form className='comment-form' onSubmit={handleCommentSubmit}>
-          <textarea className='comment-text'
+          <textarea
+            className='comment-text'
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Leave a comment..."
@@ -283,7 +357,7 @@ const FriendProfile = ({ friendId }) => {
             required
           />
           <button type="submit">Post Comment</button>
-          <button type="button" onClick={() => setIsSuggestingBook(!isSuggestingBook)}>Suggest a Book</button>
+          <button type="button" onClick={handleOpenBookSearch}>Suggest a Book</button>
         </form>
       </div>
     </div>
