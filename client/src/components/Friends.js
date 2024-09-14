@@ -52,7 +52,8 @@ const Friends = () => {
       await sendFriendRequest(receiverId, senderId);
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
-      setSearchTerm('')
+      setSearchTerm('');
+      setSearchResults([]);
     } catch (error) {
       console.error('Error sending friend request:', error);
     }
