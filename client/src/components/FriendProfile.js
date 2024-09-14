@@ -316,8 +316,10 @@ const FriendProfile = ({ friendId }) => {
         {isBookSearchOpen && (
           <div className="book-search-popup">
             <div className="book-search-content">
-              <button className="close-button" onClick={handleCloseBookSearch}>X</button>
-              <h3>Suggest a Book</h3>
+              <div className='search-header'>
+                <button className="close-button" onClick={handleCloseBookSearch}>X</button>
+                <h3>Suggest a Book</h3>
+              </div>
               <form onSubmit={handleSearchBooks}>
                 <input
                   type="text"
@@ -327,7 +329,7 @@ const FriendProfile = ({ friendId }) => {
                 />
                 <button type="submit">Search</button>
               </form>
-              <div className="search-results">
+              <div className="book-grid">
                 {searchResults.map(book => (
                   <div key={book.id} className="book">
                     <img 
@@ -335,9 +337,13 @@ const FriendProfile = ({ friendId }) => {
                       alt={book.volumeInfo.title} 
                     />
                     <div className="details">
-                      <p className="title">{book.volumeInfo.title}</p>
-                      <p className="author">by {book.volumeInfo.authors?.join(', ') || 'Unknown'}</p>
-                      <button onClick={() => handleSuggestBook(book)}>Suggest this Book</button>
+                      <div className='title-author'>
+                        <p className="title no-margin ">{book.volumeInfo.title}</p>
+                        <p className="author no-margin ">by {book.volumeInfo.authors?.join(', ') || 'Unknown'}</p>
+                      </div>
+                      <div className="book-actions">
+                        <button type='submit' onClick={() => handleSuggestBook(book)}>Suggest this Book</button>
+                      </div>
                     </div>
                   </div>
                 ))}
