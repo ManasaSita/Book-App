@@ -503,6 +503,37 @@ button:hover {
     background-color: #f7f7f7; /* Light background for the list */
     border-right: 1px solid #ddd; /* Add a border between the list and profile/chat */
 
+    .friend-request {
+
+      .request-list {
+
+        .request {
+          display: flex;
+          align-items: center;
+
+          p {
+            width: 100%;
+          }
+          
+          .accept{
+            color: green;
+            background: none;
+            font-size: 26px;
+            padding: 0;
+            margin: 0 10px;
+          }
+    
+          .decline {
+            color: red;
+            background: none;
+            font-size: 26px;
+            padding: 0;
+            margin: 0;
+          }
+        }
+      }
+    }
+
     ul {
       list-style-type: none;
       padding: 0;
