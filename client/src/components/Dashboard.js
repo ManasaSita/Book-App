@@ -188,11 +188,11 @@ const Dashboard = () => {
               {comments.length > 0 ? (
                 <ul>
                   {comments.map((comment) => (
-                    <li key={comment._id} className='comment'>
+                    <li id={comment.id} className='comment'>
                       <p className='commenter'><strong>{comment.commenterUsername}</strong></p>
                       <div className='comment-content'>
                         <p>{renderCommentContent(comment)}</p>
-                        <button onClick={() => handleDeleteComment(comment._id)}>Delete</button>
+                        <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
                       </div>
                     </li>
                   ))}
