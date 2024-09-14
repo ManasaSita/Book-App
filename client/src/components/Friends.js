@@ -15,27 +15,29 @@ const Friends = () => {
   const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
-    const fetchFriendsData = async () => {
-      try {
-        const response = await fetchFriends(senderId);
-        setFriends(response);
-      } catch (error) {
-        console.error('Error fetching friends:', error);
-      }
-    };
-
-    const fetchRequests = async () => {
-      try {
-        const response = await fetchFriendRequests();
-        setRequests(response.receivedRequests);
-      } catch (error) {
-        console.error('Error fetching friend requests:', error);
-      }
-    };
-
     fetchRequests();
     fetchFriendsData();
   }, []);
+
+  const fetchFriendsData = async () => {
+    try {
+      const response = await fetchFriends(senderId);
+      setFriends(response);
+    } catch (error) {
+      console.error('Error fetching friends:', error);
+    }
+  };
+
+  const fetchRequests = async () => {
+    try {
+      const response = await fetchFriendRequests();
+      setRequests(response.receivedRequests);
+      console.log("fetchRequests--------", requests);
+      
+    } catch (error) {
+      console.error('Error fetching friend requests:', error);
+    }
+  };
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -59,6 +61,18 @@ const Friends = () => {
     }
   };
 
+    const handleResponse = async (request, action) => {
+    try {
+      console.log("handleResponse-----", request, action);
+      
+      await respondToFriendRequest(request.sender._id, request._id, action);
+      setRequests(requests.filter(request => request._id !== request._id));
+      fetchFriendsData();
+    } catch (error) {
+      console.error(`Error ${action === 'accept' ? 'accepting' : 'declining'} friend request:`, error);
+    }
+  };
+
   const handleFriendClick = (friendId) => {
     setSelectedFriendId(friendId);
   };
@@ -76,6 +90,23 @@ const Friends = () => {
           <button type="submit">Search</button>
         </form>
 
+        {requests ? (
+          <div className='friend-request'>
+            <h3>Friend Requests</h3>
+            <ul className='request-list'>
+              {requests.map(request => (
+              <li id={request._id} className='request'>
+                <p>{request.sender.username}</p>
+                <button className='accept' onClick={() => handleResponse(request, 'accept')}>&#10004;</button>
+                <button className='decline' onClick={() => handleResponse(request, 'decline')}>&#10008;</button>
+              </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <></>
+        )}
+        
         {searchResults && searchResults.length > 0 ? (
           <>
             <h2>Search Results</h2>
