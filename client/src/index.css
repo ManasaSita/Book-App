@@ -1159,3 +1159,27 @@ button:hover {
   border-radius: 10px;
   background: #f1f1f1; /* Color of the track */
 }
+
+.no-data-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 83vh;
+  background-color: #f9f9f9;
+
+
+  .no-data-message {
+    text-align: center;
+    color: #555;
+  }
+
+  .no-data-message h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .no-data-message p {
+    font-size: 16px;
+    color: #777;
+  }
+}

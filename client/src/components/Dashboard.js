@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { updateBookProgress, updateBookStatus, getCurrentlyReadingBooks, getComments, deleteCommentByTargetUser } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import NoDataPage from './NoDataPage';
 
 const Dashboard = () => {
   const [currentlyReading, setCurrentlyReading] = useState([]);
@@ -36,9 +37,9 @@ const Dashboard = () => {
   const fetchCurrentlyReading = async () => {
     try {
       const books = await getCurrentlyReadingBooks(userId);
+      console.log("books--------", books);
+
       if(books.message){
-        console.log("books--------", books);
-        
         setCurrentlyReading([]);
       } else {
         setCurrentlyReading(books);
@@ -140,10 +141,11 @@ const Dashboard = () => {
       <div className="right-side">
         {activeView === 'currentlyReading' ? (
           <div>
-            <h3>Currently Reading</h3>
-            <div className="book-grid">
-              {currentlyReading ? (
-                currentlyReading.map(book => (
+            {currentlyReading.length > 0 ? (
+              currentlyReading.map(book => (
+                <>
+                <h3>Currently Reading</h3>
+                <div className="book-grid">
                   <div className='book' key={book._id}>
                     <img src={book.thumbnail} alt={book.title} />
                     <div className='details'>
@@ -175,32 +177,33 @@ const Dashboard = () => {
                       )}
                     </div>
                   </div>
-                ))
-              ) : (
-                <p>No book is marked as Reading. Start reading...!</p>
-              )}
-            </div>
+                </div>
+                </>
+              ))
+            ) : (
+              <NoDataPage message="No book is marked as Reading. Start reading...!" link = {"/mybooks"}/>
+            )}
           </div>
         ) : (
           <div className="comments">
-            <h3>Comments on Your Profile</h3>
-            <div className='comments-list'>
               {comments.length > 0 ? (
-                <ul>
-                  {comments.map((comment) => (
-                    <li id={comment.id} className='comment'>
-                      <p className='commenter'><strong>{comment.commenterUsername}</strong></p>
-                      <div className='comment-content'>
-                        <p>{renderCommentContent(comment)}</p>
-                        <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <div className='comments-list'>
+                  <h3>Comments on Your Profile</h3>
+                  <ul>
+                    {comments.map((comment) => (
+                      <li id={comment.id} className='comment'>
+                        <p className='commenter'><strong>{comment.commenterUsername}</strong></p>
+                        <div className='comment-content'>
+                          <p>{renderCommentContent(comment)}</p>
+                          <button onClick={() => handleDeleteComment(comment.id)}>Delete</button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ) : (
-                <p>No Comments Yet!</p>
+                <NoDataPage message="No Comments!" />
               )}
-            </div>
           </div>
         )}
       </div>
