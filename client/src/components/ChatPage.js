@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { fetchFriends } from '../services/api';
 import Chat from './Chat';  // Import the Chat component
 import Notification from './Notification';
 import NoDataPage from './NoDataPage';
+import { useParams } from 'react-router-dom';
 
 const ChatPage = () => {
   const [friends, setFriends] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState();
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const senderId = useAuth().user.payload.user.id;
+  const senderId = useParams().userId;
   const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
@@ -39,7 +39,7 @@ const ChatPage = () => {
             <ul>
               {friends.map(friend => (
                 <li
-                  key={friend._id}
+                  id={friend._id}
                   onClick={() => handleFriendClick(friend)}
                   className={friend === selectedFriend ? 'selected-friend' : ''}
                 >

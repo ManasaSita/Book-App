@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getMyBooks, deleteBook, searchBooks, addBookFromSearch, updateBookStatus } from '../services/api';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import NoDataPage from './NoDataPage';
 
 const BookList = () => {
@@ -11,8 +10,8 @@ const BookList = () => {
   const [searchPerformed, setSearchPerformed] = useState(false); // Track if search has been performed
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const userId = user.payload.user.id;
+  const userId = useParams().userId;
+  console.log("params-------", useParams(), userId);
 
   useEffect(() => {
     fetchBooks();

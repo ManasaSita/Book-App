@@ -15,7 +15,10 @@ const Login = () => {
     try {
       const userData = await login(email, password);
       authenticateUser(userData);
-      navigate('/dashboard');  // Redirect to the homepage or dashboard after successful login
+      console.log("userData--------",  userData);
+      const userId =  userData.payload.user.id;
+      
+      navigate(`/user/${userId}/dashboard`);  // Redirect to the homepage or dashboard after successful login
     } catch (err) {
       console.error('Login failed', err);
       setError('Invalid email or password');
