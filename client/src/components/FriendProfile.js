@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { getFriendDetails, postComment, deleteCommentByCommenter, searchBooks, addBookFromSearch, createBook } from '../services/api'; 
 import { useAuth } from '../context/AuthContext';
 import Notification from './Notification';
@@ -7,6 +7,7 @@ import Notification from './Notification';
 const FriendProfile = ({ friendId }) => {
   const { user } = useAuth(); 
   const userData= user?.payload?.user;
+  const userId = useParams().userId;
   const [friendDetails, setFriendDetails] = useState(null);
   const [books, setBooks] = useState([]);
   const [comments, setComments] = useState([]);
@@ -46,7 +47,7 @@ const FriendProfile = ({ friendId }) => {
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     try {
-      const commentData = { commenterId: userData.id, friendId, text: newComment }; 
+      const commentData = { commenterId: userId, friendId, text: newComment }; 
       const response = await postComment(commentData);
         
       if (response && response.commentsWithUsernames) {
@@ -58,7 +59,7 @@ const FriendProfile = ({ friendId }) => {
         // Fallback: optimistically add the new comment
         const newCommentAdded = {
           _id: Date.now(), // Temporary ID, can be replaced with actual ID from backend
-          commenter: userData._id,
+          commenter: userId,
           commenterUsername: userData.username,
           content: newComment,
           createdAt: new Date().toISOString(), // Assuming server returns ISO dates
@@ -75,7 +76,7 @@ const FriendProfile = ({ friendId }) => {
   const handleDeleteComment = async (commentId) => {
     try {
       // Call the API to delete the comment
-      await deleteCommentByCommenter({ userId: userData.id, commentId });  // Assuming deleteComment function makes a request to the backend API
+      await deleteCommentByCommenter({ userId: userId, commentId });  // Assuming deleteComment function makes a request to the backend API
   
       // Optimistically update the UI by removing the deleted comment from the state
       setComments((prevComments) =>
@@ -131,7 +132,7 @@ const FriendProfile = ({ friendId }) => {
       const commentText = `I suggest you read "${bookDetails.title}". Click here to see details:`;
 
       const commentData = { 
-        commenterId: userData.id, 
+        commenterId: userId, 
         friendId: friendId, 
         text: commentText,
         bookId: upDatedBookDetails.bookId
@@ -150,7 +151,7 @@ const FriendProfile = ({ friendId }) => {
         // Fallback: optimistically add the new comment
         const newCommentAdded = {
           _id: Date.now(),
-          commenter: userData.id,
+          commenter: userId,
           commenterUsername: userData.username,
           content: commentText,
           bookDetails: bookDetails,
@@ -200,7 +201,7 @@ const FriendProfile = ({ friendId }) => {
         thumbnail: book.thumbnail,
         averageRating: book.averageRating || null,
         pageCount: book.pageCount || null,
-      }, userData.id);
+      }, userId);
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
       console.log('Book added to your collection:', addedBook);
@@ -300,7 +301,7 @@ const FriendProfile = ({ friendId }) => {
                   <p className='commenter-name'>{comment.commenterUsername === userData.username ? 'You' : comment.commenterUsername}</p>
                   <div className='comment-content'>
                     <p>{renderCommentContent(comment)}</p>
-                    {comment.commenter === userData.id && (
+                    {comment.commenter === userId && (
                       <button onClick={() => handleDeleteComment(comment._id)}>Delete</button>
                     )}
                   </div>

@@ -1,6 +1,6 @@
 // Friends.js
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useParams } from 'react-router-dom';
 import { fetchFriends, searchUsers, sendFriendRequest, fetchFriendRequests, respondToFriendRequest } from '../services/api';
 import FriendProfile from './FriendProfile';
 import Notification from './Notification';
@@ -12,7 +12,7 @@ const Friends = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedFriendId, setSelectedFriendId] = useState(null);
   const [requests, setRequests] = useState([]);
-  const senderId = useAuth().user.payload.user.id;
+  const senderId = useParams().userId;
   const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
@@ -134,19 +134,17 @@ const Friends = () => {
         {friends && friends.length > 0 ? (
           <>
             <h3>Your Friends</h3>
-            {friends.map(friend => (
-              <>
-                <ul>
-                  <li
-                    key={friend._id}
-                    onClick={() => handleFriendClick(friend._id)}
-                    className={friend._id === selectedFriendId ? 'selected-friend' : ''}
-                  >
-                    {friend.username}
-                  </li>
-                </ul>
-              </>
-            ))}
+            <ul>
+              {friends.map(friend => (
+                <li
+                  id={friend._id}
+                  onClick={() => handleFriendClick(friend._id)}
+                  className={friend._id === selectedFriendId ? 'selected-friend' : ''}
+                >
+                  {friend.username}
+                </li>
+              ))}
+            </ul>
           </>
         ):(
           <></>

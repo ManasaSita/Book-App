@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { sendMessage, fetchMessages } from '../services/api';
+import { useParams } from 'react-router-dom';
 
 const Chat = ({ friend }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const { user } = useAuth();
-  const sender = user.payload.user.username;
-  const senderId = user.payload.user.id;
+  const senderId = useParams().userId;
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {

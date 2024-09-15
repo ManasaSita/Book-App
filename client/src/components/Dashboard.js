@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { updateBookProgress, updateBookStatus, getCurrentlyReadingBooks, getComments, deleteCommentByTargetUser } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import NoDataPage from './NoDataPage';
 
 const Dashboard = () => {
@@ -11,14 +10,11 @@ const Dashboard = () => {
   const [totalPagesToUpdate, setTotalPagesToUpdate] = useState(0);
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeView, setActiveView] = useState('currentlyReading');
-  const [comments, setComments] = useState([
-    // Sample comments; replace with dynamic data
-    { id: 1, message: 'Friend commented on your post', content: 'Comment Content 1', commenter: 'John Doe' },
-    { id: 2, message: 'New friend request', content: 'Friend Request Content', commenter: 'Jane Smith' },
-  ]);
-  const { user } = useAuth();
-  const userId = user.payload.user.id;
+  const [comments, setComments] = useState([]);
+  const userId = useParams().userId;
 
+  console.log("params-------", useParams(), userId);
+  
   useEffect(() => {
     fetchCurrentlyReading();
     fetchComments();
@@ -109,7 +105,7 @@ const Dashboard = () => {
           I suggest you read "{' '}
           <Link 
             to={{
-              pathname: `/books/suggested/${comment.bookLink}`,
+              pathname: `/books/suggecommentssted/${comment.bookLink}`,
               state: { bookTitle: bookTitle }
             }}
           >
@@ -141,48 +137,48 @@ const Dashboard = () => {
       <div className="right-side">
         {activeView === 'currentlyReading' ? (
           <div>
-            {currentlyReading.length > 0 ? (
-              currentlyReading.map(book => (
-                <>
+            {currentlyReading && currentlyReading.length > 0 ? (
+              <>
                 <h3>Currently Reading</h3>
                 <div className="book-grid">
-                  <div className='book' key={book._id}>
-                    <img src={book.thumbnail} alt={book.title} />
-                    <div className='details'>
-                      <div className='title-author'>
-                        <p className='title'>{book.title}</p>
-                        <p className='author'>by <strong>{book.author}</strong></p>
-                      </div>
-                      {isUpdating && bookIdToUpdate === book._id ? (
-                        <form onSubmit={handleSubmit}>
-                          Pages Read:
-                          <div className='input-calc'>
-                            <input 
-                              type="number" 
-                              value={pagesRead} 
-                              onChange={(e) => setPagesRead(e.target.value)} 
-                              min="0" 
-                              max={book.pageCount}
-                            />
-                            <p> / {book.pageCount}</p>
+                  {currentlyReading.map(book => (
+                      <div className='book' key={book._id}>
+                        <img src={book.thumbnail} alt={book.title} />
+                        <div className='details'>
+                          <div className='title-author'>
+                            <p className='title'>{book.title}</p>
+                            <p className='author'>by <strong>{book.author}</strong></p>
                           </div>
-                          <button type="submit">Update Progress</button>
-                        </form>
-                      ) : (
-                        <div className='progress'>
-                          <div className='percent'>Progress: {book.progress}%</div>
-                          <button onClick={() => handleUpdateClick(book._id, book.pageCount)}>Update Progress</button>
-                          <button onClick={() => handleFinishBook(book._id)}>I've finished</button>
+                          {isUpdating && bookIdToUpdate === book._id ? (
+                            <form onSubmit={handleSubmit}>
+                              Pages Read:
+                              <div className='input-calc'>
+                                <input 
+                                  type="number" 
+                                  value={pagesRead} 
+                                  onChange={(e) => setPagesRead(e.target.value)} 
+                                  min="0" 
+                                  max={book.pageCount}
+                                />
+                                <p> / {book.pageCount}</p>
+                              </div>
+                              <button type="submit">Update Progress</button>
+                            </form>
+                          ) : (
+                            <div className='progress'>
+                              <div className='percent'>Progress: {book.progress}%</div>
+                              <button onClick={() => handleUpdateClick(book._id, book.pageCount)}>Update Progress</button>
+                              <button onClick={() => handleFinishBook(book._id)}>I've finished</button>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                  ))}
                 </div>
-                </>
-              ))
+              </>
             ) : (
               <NoDataPage message="No book is marked as Reading. Start reading...!" link = {"/mybooks"}/>
-            )}
+            )  }
           </div>
         ) : (
           <div className="comments">

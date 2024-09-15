@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { Link, useNavigate, Outlet, useLocation,  useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Layout = () => {
@@ -9,7 +9,9 @@ const Layout = () => {
   const [selectedNav, setSelectedNav] = useState('');
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
+  const userId = useParams().userId;
+  console.log("params-------", useParams(), userId);
+  
   useEffect(() => {
     if (location.pathname.includes('/friends/messages')) {
       setSelectedNav('chat');
@@ -56,34 +58,34 @@ const Layout = () => {
         {!isAuthPage && (
           <header className='navbar'>
             <div className='navbar-logo'>
-              <Link to="/dashboard">BookShelf</Link>
+              <Link to={`/user/${userId}/dashboard`}>BookShelf</Link>
             </div>
             <nav className='navbar-links'>
               {user ? (
                 <>
                   <Link
-                    to="/dashboard"
+                    to={`/user/${userId}/dashboard`}
                     onClick={() => handleNavClick('dashboard')}
                     className={selectedNav === 'dashboard' ? 'selected-nav' : 'nav-link'}
                   >
                     Dashboard
                   </Link>
                   <Link
-                    to="/mybooks"
+                    to={`/user/${userId}/mybooks`}
                     onClick={() => handleNavClick('mybooks')}
                     className={selectedNav === 'mybooks' ? 'selected-nav' : 'nav-link'}
                   >
                     My Books
                   </Link>
                   <Link
-                    to="/friends"
+                    to={`/user/${userId}/friends`}
                     onClick={() => handleNavClick('friends')}
                     className={selectedNav === 'friends' ? 'selected-nav' : 'nav-link'}
                   >
                     Friends
                   </Link>
                   <Link
-                    to="/friends/messages"
+                    to={`/user/${userId}/friends/messages`}
                     onClick={() => handleNavClick('chat')}
                     className={selectedNav === 'chat' ? 'selected-nav' : 'nav-link'}
                   >
@@ -99,7 +101,7 @@ const Layout = () => {
                     {isDropdownOpen && (
                       <div className="dropdown-menu">
                         <Link 
-                          to="/profile" 
+                          to={`/user/${userId}/profile`}
                           className="dropdown-item" 
                           onClick={() => setDropdownOpen(false)}  // Close after selecting My Profile
                         >

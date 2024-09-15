@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getBookWithStatus, addReview, getReviews, editReview, deleteReview, getBook, addBookFromSearch } from '../services/api'; // addToCollection method
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import Notification from './Notification';
 
 const BookDetail = () => {
@@ -12,10 +11,10 @@ const BookDetail = () => {
   const [showMore, setShowMore] = useState(false);
   const [reviewToEdit, setReviewToEdit] = useState(null); // Track the review being edited
   const { bookId } = useParams();
-  const { user } = useAuth();
-  const userId = user.payload.user.id;
   const location = useLocation();
   const [showNotification, setShowNotification] = useState(false);
+  const userId = useParams().userId;
+  console.log("params-------", useParams(), userId);
 
   useEffect(() => {
     // Determine which fetch method to use based on the URL
