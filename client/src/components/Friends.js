@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { fetchFriends, searchUsers, sendFriendRequest, fetchFriendRequests, respondToFriendRequest } from '../services/api';
 import FriendProfile from './FriendProfile';
 import Notification from './Notification';
+import NoDataPage from './NoDataPage';
 
 const Friends = () => {
   const [friends, setFriends] = useState([]);
@@ -90,7 +91,7 @@ const Friends = () => {
           <button type="submit">Search</button>
         </form>
 
-        {requests ? (
+        {requests && requests.length > 0 ? (
           <div className='friend-request'>
             <h3>Friend Requests</h3>
             <ul className='request-list'>
@@ -130,24 +131,40 @@ const Friends = () => {
           // <p>No results found.</p>
         )}
 
-        <h1>Your Friends</h1>
-        <ul>
-          {friends.map(friend => (
-            <li
-              key={friend._id}
-              onClick={() => handleFriendClick(friend._id)}
-              className={friend._id === selectedFriendId ? 'selected-friend' : ''}
-            >
-              {friend.username}
-            </li>
-          ))}
-        </ul>
+        {friends && friends.length > 0 ? (
+          <>
+            <h3>Your Friends</h3>
+            {friends.map(friend => (
+              <>
+                <ul>
+                  <li
+                    key={friend._id}
+                    onClick={() => handleFriendClick(friend._id)}
+                    className={friend._id === selectedFriendId ? 'selected-friend' : ''}
+                  >
+                    {friend.username}
+                  </li>
+                </ul>
+              </>
+            ))}
+          </>
+        ):(
+          <></>
+        )}
+        
       </div>
+
       <div className="friend-profile-or-chat">
-        {selectedFriendId ? (
-          <FriendProfile friendId={selectedFriendId} />
-        ) : (
-          <p>Select a friend to view their profile</p>
+        {friends && friends.length > 0 ? (
+          <>
+            {selectedFriendId ? (
+              <FriendProfile friendId={selectedFriendId} />
+            ) : (
+              <p>Select a friend to view their profile</p>
+            )}
+          </>
+        ):(
+          <NoDataPage message="Make new connections!" />
         )}
       </div>
     </div>

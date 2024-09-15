@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { fetchFriends } from '../services/api';
 import Chat from './Chat';  // Import the Chat component
 import Notification from './Notification';
+import NoDataPage from './NoDataPage';
 
 const ChatPage = () => {
   const [friends, setFriends] = useState([]);
@@ -30,30 +31,36 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="friends-container">
-      <div className="friends-list">
-        <h2>Friends List</h2>
-        <ul>
-          {friends.map(friend => (
-            <li
-              key={friend._id}
-              onClick={() => handleFriendClick(friend)}
-              className={friend === selectedFriend ? 'selected-friend' : ''}
-            >
-              {friend.username}
-            </li>
-          ))}
-        </ul>
-      </div>
+    <>
+      {friends.length > 0 ? (
+        <div className="friends-container">
+          <div className="friends-list">
+            <h2>Friends List</h2>
+            <ul>
+              {friends.map(friend => (
+                <li
+                  key={friend._id}
+                  onClick={() => handleFriendClick(friend)}
+                  className={friend === selectedFriend ? 'selected-friend' : ''}
+                >
+                  {friend.username}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      <div className="friend-profile-or-chat">
-        {isChatOpen ? (
-          <Chat friend={selectedFriend} />
-        ) : (
-          <p>Select a friend to start chatting</p>
-        )}
-      </div>
-    </div>
+          <div className="friend-profile-or-chat">
+            {isChatOpen ? (
+              <Chat friend={selectedFriend} />
+            ) : (
+              <p>Select a friend to start chatting</p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <NoDataPage message="Make new connections to start chatting.."/>
+      )}
+    </>
   );
 };
 
