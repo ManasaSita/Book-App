@@ -179,7 +179,7 @@ const FriendProfile = ({ friendId }) => {
           I suggest you read "{' '}
           <Link 
             to={{
-              pathname: `/books/suggested/${comment.bookLink}`,
+              pathname: `/user/${userId}/books/suggested/${comment.bookLink}`,
               state: { bookTitle: bookTitle }
             }}
           >
