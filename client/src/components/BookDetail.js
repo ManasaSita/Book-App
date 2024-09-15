@@ -195,7 +195,7 @@ const BookDetail = () => {
           )}
         </>
       ) : (
-        <Link to="/mybooks">
+        <Link to={`/user/${userId}/mybooks`}>
           <button>Back to List</button>
         </Link>
       )}
