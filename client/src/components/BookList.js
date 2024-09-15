@@ -164,7 +164,7 @@ const BookList = () => {
                       ) : (
                         <button onClick={() => handleMarkAsReading(book._id)}>Mark as Currently Reading</button>
                       )}
-                      <Link to={`/books/${book._id}`}>
+                      <Link to={`/user/${userId}/books/${book._id}`}>
                         <button>View</button>
                       </Link>
                       <button onClick={() => handleDeleteBook(book._id)}>Delete</button>
