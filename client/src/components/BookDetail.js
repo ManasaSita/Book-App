@@ -42,7 +42,7 @@ const BookDetail = () => {
       const suggestedBook = await getBook(bookId);
       const bookDetails = {
         title: suggestedBook.title,
-        author: suggestedBook.authors ? suggestedBook.authors.join(', ') : 'Unknown',
+        author: suggestedBook.author ? suggestedBook.author : 'Unknown',
         description: suggestedBook.description,
         thumbnail: suggestedBook ? suggestedBook.thumbnail : null,
         averageRating: suggestedBook.averageRating || null,
@@ -123,17 +123,17 @@ const BookDetail = () => {
         </div>
         <div className='content'>
           <h2>{book.title}</h2>
-          <p>Author: {book.author}</p>
+          <p>Author: <strong>{book.author}</strong></p>
           <div className="description-box">
             Description:
             <p className='description'>{displayText}</p>
             {isTruncated && (
-              <button onClick={toggleShowMore}>
+              <button className='no-margin' onClick={toggleShowMore}>
                 {showMore ? 'Show Less' : 'Show More'}
               </button>
             )}
           </div>
-          <p>Rating: {book.averageRating}</p>
+          <p>Average Rating: {book.averageRating}</p>
           <p>Page Count: {book.pageCount}</p>
           {location.pathname.includes('suggested') ? null : (
             <>

@@ -371,9 +371,11 @@ export const editReview = async (userId, bookId, reviewData) => {
   }
 };
 
-export const deleteReview = async (reviewId) => {
+export const deleteReview = async (userId, bookId) => {
+  console.log('deleteReview------- api',userId, bookId);
+  
   try {
-    const response = await api.delete(`/mybooks/review/${reviewId}`);
+    const response = await api.delete(`/mybooks/review/${bookId}?userId=${userId}`);
     return response.data;
   } catch (error) {
     console.error('Error deleting review:', error);
