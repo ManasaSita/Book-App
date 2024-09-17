@@ -362,10 +362,6 @@ button:hover {
   background-color: #404040;
 }
 
-.no-margin {
-  margin: 0;
-}
-
 /* UserProfile.css */
 
 .user-profile {
@@ -1078,17 +1074,24 @@ button:hover {
     display: flex;
     width: 100%;
 
-    .image img {
-      max-width: 200px;
-      border-radius: 8px;
+    .image{ 
+      padding: 20px;
+      img {
+        height: 318px;
+        max-width: 200px;
+        border-radius: 8px;
+      }
     }
     
     .content {
       flex: 1;
-      .description {
-        max-height: 150px; /* Set the fixed height */
-        overflow-y: auto; /* Enable vertical scrolling */
-        padding-right: 10px; /* Add some padding for better readability */
+
+      .description-box {
+        .description {
+          max-height: 150px; /* Set the fixed height */
+          overflow-y: auto; /* Enable vertical scrolling */
+          padding-right: 10px; /* Add some padding for better readability */
+        }
       }
     }
   }

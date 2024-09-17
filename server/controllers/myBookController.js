@@ -331,15 +331,15 @@ exports.editReview = async (req, res) => {
 exports.deleteReview = async (req, res) => {
   try {
     const { bookId } = req.params;
-    const userId = req.user.id;
+    const { userId } = req.query;
+
     console.log("deleteReview------", bookId, userId);
-    
+
     // Find the book in the user's collection and update the review
     const userBooks = await MyBooks.findOneAndUpdate(
       { user_id: userId, 'books.book_id': bookId },
-      {
-        $set: { 'books.$.review': null } // Update the review field
-      },
+      { $unset: { 'books.$.review': '' } }, // Use $unset to remove the review field
+      { new: true } // Return the updated document
     );
 
     if (!userBooks) {
