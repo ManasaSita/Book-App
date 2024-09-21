@@ -177,7 +177,7 @@ const Dashboard = () => {
                 </div>
               </>
             ) : (
-              <NoDataPage message="No book is marked as Reading. Start reading...!" link = {`/user/${userId}/mybook`}/>
+              <NoDataPage message="No book is marked as Reading. Start reading...!" link = {`/user/${userId}/mybooks`}/>
             )  }
           </div>
         ) : (
