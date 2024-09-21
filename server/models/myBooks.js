@@ -19,6 +19,7 @@ const MyBooksSchema = new Schema({
         enum: ['to-read', 'reading', 'read', 'currently-reading'], 
         default: 'to-read' 
       },
+      googleBooksId: { type: String, required: true },
       rating: Number,
       progress: Number,
       pagesRead: Number,

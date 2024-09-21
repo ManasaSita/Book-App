@@ -5,7 +5,7 @@ const commentSchema = new mongoose.Schema({
   commenter: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true }, // User who comments
   targetUser: { type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true }, // Friend's profile being commented on
   content: { type: String, required: true }, // The comment content
-  bookLink: { type: mongoose.Schema.Types.ObjectId, ref: 'Books', required: false }, // Optional book recommendation
+  bookLink: { type: String, required: false }, // Optional book recommendation
   createdAt: { type: Date, default: Date.now }
 });
 

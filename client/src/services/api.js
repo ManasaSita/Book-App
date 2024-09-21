@@ -26,7 +26,7 @@ api.interceptors.request.use(
 // Auth-related API calls
 export const register = async (userData) => {
   try {
-    console.log("userData--------", userData);
+    // console.log("userData--------", userData);
     
     const response = await api.post('/auth/register', userData);
     console.log("response-----", response);
@@ -40,7 +40,7 @@ export const register = async (userData) => {
 
 export const login = async (email, password) => {
   try {
-    console.log("login------", email, password);
+    // console.log("login------", email, password);
     
     const response = await api.post('/auth/login', {email, password});
     console.log("response--------", response.data);
@@ -117,8 +117,9 @@ export const getFriendDetails = async (friendId) => {
 // Comment-related API calls
 export const postComment = async (commentData) => {
   try {    
+    // console.log("postComment-----", commentData);
     const response = await api.post(`/auth/friends/comment`, commentData);    
-    console.log("response-----", response.data);
+    // console.log("response-----", response.data);
     
     return response.data;
   } catch (error) {
@@ -144,7 +145,7 @@ export const deleteCommentByTargetUser = async (commentData) => {
     const response = await api.delete(`/auth/friends/user/delete-comment`, {
       data: commentData,
     });
-    console.log(response.data);
+    // console.log(response.data);
 
     return response.data;
   } catch (error) {
@@ -160,7 +161,7 @@ export const deleteCommentByCommenter = async (commentData) => {
     const response = await api.delete(`/auth/friends/commenter/delete-comment`, {
       data: commentData,
     });
-    console.log(response.data);
+    // console.log(response.data);
 
     return response.data;
   } catch (error) {
@@ -173,7 +174,7 @@ export const deleteCommentByCommenter = async (commentData) => {
 export const getComments = async (userId) => {
   try {
     const response = await api.get(`/auth/friends/comments/${userId}`);
-    console.log("getComments response:", response.data);
+    // console.log("getComments response:", response.data);
     return response.data.comments;
   } catch (error) {
     console.error('Error fetching comments:', error);
@@ -189,7 +190,7 @@ export const fetchMessages = async (senderId,friendId) => {
         senderId: senderId
       }
     });
-    console.log("response-----", response.data);
+    // console.log("response-----", response.data);
     
     return response.data;
   } catch (error) {
@@ -201,7 +202,7 @@ export const fetchMessages = async (senderId,friendId) => {
 export const sendMessage = async (messageData) => {
   try {
     const response = await api.post(`/auth/friends/messages`, messageData);
-    console.log("sendMessage--------", response.data);
+    // console.log("sendMessage--------", response.data);
     
     return response.data;
   } catch (error) {
@@ -234,7 +235,7 @@ export const updateBook = async (id, bookData) => {
 export const getBook = async (bookId) => {
   try {
     const response = await api.get(`/books/suggested/${bookId}`);
-    console.log(response);
+    // console.log(response);
     
     return response.data;
   } catch (error) {
@@ -245,7 +246,7 @@ export const getBook = async (bookId) => {
 
 export const getBookWithStatus = async (bookId, userId) => {
   try {
-    console.log("getBookWithStatus-------", userId,bookId );
+    // console.log("getBookWithStatus-------", userId,bookId );
     const response = await api.get(`/books/${bookId}/status`, {
       params: { userId }  // Sending userId as a query parameter
     });    
@@ -258,7 +259,7 @@ export const getBookWithStatus = async (bookId, userId) => {
 
 // MyBook-related API calls
 export const getMyBooks = async (userId) => {
-  console.log("getMyBooks---API--", userId);
+  // console.log("getMyBooks---API--", userId);
   
   const response = await api.get(`/mybooks?userId=${userId}`);  // Pass userId as a query parameter
   return response.data;
@@ -280,9 +281,9 @@ export const addBookFromSearch = async (bookData, userId) => {
   
   try {
     const response = await api.post(`/mybooks/add-from-search`, {bookData, userId});
-    return response.data;
+    return response;
   } catch (error) {
-    console.error('Error adding book from search:', error);
+    console.error('Error adding book:', error);
     throw error;
   }
 };
@@ -299,7 +300,7 @@ export const rateBook = async (id, ratingData) => {
 
 export const updateBookProgress = async (progressData) => {
   try {
-    console.log("updateBookProgress--------", progressData);
+    // console.log("updateBookProgress--------", progressData);
     
     const response = await api.put(`/mybooks/progress`, progressData);
     return response.data;
@@ -321,7 +322,7 @@ export const updateBookStatus = async ( userId, bookId, status) => {
 
 export const getCurrentlyReadingBooks = async (userId) => {
   try {
-    console.log("userId----------", userId);
+    // console.log("userId----------", userId);
     
     const response = await api.get(`/mybooks/dashboard?userId=${userId}`);
     return response.data;
@@ -384,7 +385,7 @@ export const deleteReview = async (userId, bookId) => {
 };
 
 export const searchBooks = async (query) => {
-  console.log("searching----", query);
+  // console.log("searching----", query);
   
   try {
     const response = await axios.get(`${GOOGLE_BOOKS_API}?q=${query}`);

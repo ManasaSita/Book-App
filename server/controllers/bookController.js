@@ -6,7 +6,7 @@ exports.createBook = async (req, res) => {
   try {
     console.log("user--", req);
     
-    const { title, author, description, thumbnail, averageRating, pageCount } = req.body;
+    const { title, author, description, thumbnail, averageRating, pageCount, googleBooksId } = req.body;
     const newBook = new Books({
       title,
       author,
@@ -14,6 +14,7 @@ exports.createBook = async (req, res) => {
       thumbnail,
       averageRating,
       pageCount,
+      googleBooksId,
     });
     const book = await newBook.save();
     res.status(201).json(book);
@@ -56,6 +57,7 @@ exports.getBookWithStatus = async (req, res) => {
     if (!book) {
       return res.status(404).json({ message: 'Book not found' });
     }
+    console.log("book------------", book);
 
     // Fetch the book status, rating, and review from MyBooks collection
     const userBookDetails = await MyBooks.findOne({
