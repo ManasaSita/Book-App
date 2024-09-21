@@ -265,13 +265,6 @@ const FriendProfile = ({ friendId }) => {
                 </div>
                 
                 <div className="book-actions">
-                  {book.status === 'currently-reading' ? (
-                    <p className='no-margin'>Currently Reading</p>
-                  ) : book.status === 'read' ? (
-                    <p>Finished Reading!</p>
-                  ) : (
-                    <></>
-                  )}
                   {/* Add to My Collection Button */}
                   <button className='add-to-collection' onClick={() => handleAddBookToMyCollection(book)}>Add to My Collection</button>
                 </div>
@@ -279,7 +272,7 @@ const FriendProfile = ({ friendId }) => {
             </div>
           ))
         ) : (
-          <p>No books added yet.</p>
+          <p className='no-books'>No books added yet.</p>
         )}
       </div>
 
@@ -301,7 +294,7 @@ const FriendProfile = ({ friendId }) => {
               ))}
             </ul>
           ) : (
-            <p>No Comments Yet!</p>
+            <p className='no-comments'>No Comments Yet!</p>
           )}
         </div>
 
