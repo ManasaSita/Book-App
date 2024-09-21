@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getBookWithStatus, addReview, getReviews, editReview, deleteReview, getBook, addBookFromSearch } from '../services/api'; // addToCollection method
+import { getBookWithStatus, addReview, getReviews, editReview, deleteReview, getBook, addBookFromSearch, inMyCollection } from '../services/api'; // addToCollection method
 import { useParams, Link, useLocation } from 'react-router-dom';
 import Notification from './Notification';
 
@@ -14,7 +14,7 @@ const BookDetail = () => {
   const location = useLocation();
   const [showNotification, setShowNotification] = useState(false);
   const userId = useParams().userId;
-  console.log("params-------", useParams(), userId);
+  const [inCollection, setInCollection] = useState(false);  
 
   useEffect(() => {
     // Determine which fetch method to use based on the URL
@@ -24,6 +24,8 @@ const BookDetail = () => {
       fetchBookWithStatus();
     }
     fetchReview();
+    fetchSuggestedBook();
+    fetchBookWithStatus();
   }, [bookId, location.pathname]);
 
   const fetchBookWithStatus = async () => {
@@ -39,15 +41,7 @@ const BookDetail = () => {
 
   const fetchSuggestedBook = async () => {
     try {
-      const suggestedBook = await getBook(bookId);
-      const bookDetails = {
-        title: suggestedBook.title,
-        author: suggestedBook.authors ? suggestedBook.authors.join(', ') : 'Unknown',
-        description: suggestedBook.description,
-        thumbnail: suggestedBook ? suggestedBook.thumbnail : null,
-        averageRating: suggestedBook.averageRating || null,
-        pageCount: suggestedBook.pageCount || null,
-      };
+      const bookDetails = await getBook(bookId);
       setBook(bookDetails);
     } catch (error) {
       console.error('Error fetching suggested book:', error);
@@ -101,10 +95,32 @@ const BookDetail = () => {
 
   const handleAddToCollection = async () => {
     try {
-      await addBookFromSearch(book, userId);
-      setShowNotification(true);
-    } catch (error) {
-      console.error('Error adding book to collection:', error);
+      const bookToAdd = {
+        googleBooksId: book.googleBooksId,
+        title: book.title,
+        author: book.author,
+        description: book.description,
+        thumbnail: book.thumbnail,
+        averageRating: book.averageRating,
+        pageCount: book.pageCount
+      };
+      const res = await addBookFromSearch(bookToAdd, userId);
+      
+      if(res.status === 200) {
+        setShowNotification({ message: 'Book added to your collection!', type: 'success' });
+        setTimeout(() => setShowNotification(false), 3000);
+      }
+      setInCollection(true);
+    } catch (error) { 
+      console.error('Error adding book to your collection:', error); 
+      if (error.response && error.status === 409){
+        setShowNotification({message:error.response.data.message, type: 'warning' }); 
+        setTimeout(() => setShowNotification(false), 3000);
+        setInCollection(true);
+      } else { 
+        setShowNotification({ message: 'Failed to add book to collection', type: 'error' });
+        setTimeout(() => setShowNotification(false), 3000);
+      }
     }
   };
 
@@ -117,23 +133,30 @@ const BookDetail = () => {
 
   return (
     <div className='book-detail'>
+      {showNotification && (
+        <Notification
+          message={showNotification.message}
+          type={showNotification.type}
+          onClose={() => setShowNotification(null)}
+        />
+      )}
       <div className='book-content'>
         <div className='image'>
           <img src={book.thumbnail} alt={book.title} />
         </div>
         <div className='content'>
           <h2>{book.title}</h2>
-          <p>Author: {book.author}</p>
+          <p>Author: <strong>{book.author}</strong></p>
           <div className="description-box">
             Description:
             <p className='description'>{displayText}</p>
             {isTruncated && (
-              <button onClick={toggleShowMore}>
+              <button className='no-margin' onClick={toggleShowMore}>
                 {showMore ? 'Show Less' : 'Show More'}
               </button>
             )}
           </div>
-          <p>Rating: {book.averageRating}</p>
+          <p>Average Rating: {book.averageRating}</p>
           <p>Page Count: {book.pageCount}</p>
           {location.pathname.includes('suggested') ? null : (
             <>
@@ -186,13 +209,7 @@ const BookDetail = () => {
 
       {location.pathname.includes('suggested') ? (
         <>
-          <button onClick={handleAddToCollection}>Add to Collection</button>
-          {showNotification && (
-            <Notification
-              message="Book added to your collection!"
-              onClose={() => setShowNotification(false)}
-            />
-          )}
+          <button className={inCollection ? 'disabled' : ''} onClick={handleAddToCollection}>Add to Collection</button>
         </>
       ) : (
         <Link to={`/user/${userId}/mybooks`}>

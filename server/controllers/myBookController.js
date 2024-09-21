@@ -84,38 +84,47 @@ exports.deleteBook = async (req, res) => {
 
 // Add a book to MyBooks collection
 exports.addBookFromSearch = async (req, res) => {
-  console.log("addBookFromSearch---", req);
+  const { userId, bookData: bookDetails } = req.body;
+
+  console.log("addBookFromSearch--------", req.body);
   
   try {
-    const { bookData, userId } = req.body;
-    const { title, author, description, thumbnail, averageRating, pageCount } = bookData;
+    // Check if the book already exists in the Books collection
+    let book = await Books.findOne({ googleBooksId: bookDetails.googleBooksId });
+    console.log("Book found: ", book);
+    
+    if (!book) {
+      // If the book doesn't exist, create a new one
+      console.log("No existing book found. Creating new book");
+      
+      book = new Books(bookDetails);
+      await book.save();
+    }
 
-    const newBook = new Books({
-      title: title,
-      author: author,
-      description: description,
-      thumbnail: thumbnail,
-      averageRating: averageRating,
-      pageCount: pageCount,
+    // Check if the book is already in the user's collection
+    const existingBook = await MyBooks.findOne({
+      user_id: userId,
+      'books.book_id': book._id
     });
 
-    console.log("newBook-------", newBook);
-    
+    if (existingBook) {
+      return res.status(409).json({ message: 'This book is already in your collection' });
+    }
 
-    const savedBook = await newBook.save();
-
-    const userBooks = await MyBooks.findOneAndUpdate(
+    // Add the book to the user's collection
+    await MyBooks.findOneAndUpdate(
       { user_id: userId },
-      { $push: { books: { book_id: savedBook._id } } },
-      { new: true, upsert: true }
+      { $push: { books: { book_id: book._id, googleBooksId: book.googleBooksId } } },
+      { upsert: true, new: true }
     );
 
-    res.status(201).json(userBooks);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(200).json({ message: 'Book added to collection successfully', bookId: book._id });
+  } catch (error) {
+    console.error('Error adding book to collection:', error);
+    res.status(500).json({ message: 'Error adding book to collection', error: error.message });
   }
 };
+
 
 // Get currently-reading books for the logged-in user
 exports.getCurrentlyReadingBooks = async (req, res) => {
@@ -331,15 +340,15 @@ exports.editReview = async (req, res) => {
 exports.deleteReview = async (req, res) => {
   try {
     const { bookId } = req.params;
-    const userId = req.user.id;
+    const { userId } = req.query;
+
     console.log("deleteReview------", bookId, userId);
-    
+
     // Find the book in the user's collection and update the review
     const userBooks = await MyBooks.findOneAndUpdate(
       { user_id: userId, 'books.book_id': bookId },
-      {
-        $set: { 'books.$.review': null } // Update the review field
-      },
+      { $unset: { 'books.$.review': '' } }, // Use $unset to remove the review field
+      { new: true } // Return the updated document
     );
 
     if (!userBooks) {
