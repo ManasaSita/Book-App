@@ -29,7 +29,7 @@ export const register = async (userData) => {
     // console.log("userData--------", userData);
     
     const response = await api.post('/auth/register', userData);
-    console.log("response-----", response);
+    // console.log("response-----", response);
     
     return response.data;
   } catch (error) {
@@ -43,7 +43,7 @@ export const login = async (email, password) => {
     // console.log("login------", email, password);
     
     const response = await api.post('/auth/login', {email, password});
-    console.log("response--------", response.data);
+    // console.log("response--------", response.data);
     
     return response.data;
   } catch (error) {
@@ -139,7 +139,7 @@ export const getDetails = async (userId) => {
 };
 
 export const deleteCommentByTargetUser = async (commentData) => {
-  console.log("deleteCommentByTargetUser------------", commentData);
+  // console.log("deleteCommentByTargetUser------------", commentData);
 
   try {
     const response = await api.delete(`/auth/friends/user/delete-comment`, {
@@ -155,7 +155,7 @@ export const deleteCommentByTargetUser = async (commentData) => {
 };
 
 export const deleteCommentByCommenter = async (commentData) => {
-  console.log("deleteCommentByCommenter------------", commentData);
+  // console.log("deleteCommentByCommenter------------", commentData);
 
   try {
     const response = await api.delete(`/auth/friends/commenter/delete-comment`, {
@@ -277,7 +277,7 @@ export const deleteBook = async (id) => {
 };
 
 export const addBookFromSearch = async (bookData, userId) => {
-  console.log("api-----", bookData, userId);
+  // console.log("api-----", bookData, userId);
   
   try {
     const response = await api.post(`/mybooks/add-from-search`, {bookData, userId});
@@ -373,7 +373,7 @@ export const editReview = async (userId, bookId, reviewData) => {
 };
 
 export const deleteReview = async (userId, bookId) => {
-  console.log('deleteReview------- api',userId, bookId);
+  // console.log('deleteReview------- api',userId, bookId);
   
   try {
     const response = await api.delete(`/mybooks/review/${bookId}?userId=${userId}`);
@@ -389,7 +389,7 @@ export const searchBooks = async (query) => {
   
   try {
     const response = await axios.get(`${GOOGLE_BOOKS_API}?q=${query}`);
-    console.log("response--------", response.data);
+    // console.log("response--------", response.data);
     
     return response.data.items;
   } catch (error) {

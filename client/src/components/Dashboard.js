@@ -13,7 +13,7 @@ const Dashboard = () => {
   const [comments, setComments] = useState([]);
   const userId = useParams().userId;
 
-  console.log("params-------", useParams(), userId);
+  // console.log("params-------", useParams(), userId);
   
   useEffect(() => {
     fetchCurrentlyReading();
@@ -23,7 +23,7 @@ const Dashboard = () => {
   const fetchComments = async () => {
     try {
       const response = await getComments(userId);
-      console.log("comments---", response);
+      // console.log("comments---", response);
       setComments(response)
     } catch (error) {
       console.error('Error fetching comments:', error.message);
@@ -33,7 +33,7 @@ const Dashboard = () => {
   const fetchCurrentlyReading = async () => {
     try {
       const books = await getCurrentlyReadingBooks(userId);
-      console.log("books--------", books);
+      // console.log("books--------", books);
 
       if(books.message){
         setCurrentlyReading([]);
@@ -76,7 +76,7 @@ const Dashboard = () => {
   };
 
   const handleDeleteComment = async (commentId) => {
-    console.log("handleDeleteComment--------", commentId, userId);
+    // console.log("handleDeleteComment--------", commentId, userId);
     
     try {
       // Call the API to delete the comment
@@ -96,7 +96,7 @@ const Dashboard = () => {
     const suggestPattern = /I suggest you read "(.*?)"\. Click here to see details:/;
     const match = comment.content.match(suggestPattern);
     
-    console.log("suggestedbook", comment);
+    // console.log("suggestedbook", comment);
     
     if (match) {
       const bookTitle = match[1];
@@ -177,7 +177,7 @@ const Dashboard = () => {
                 </div>
               </>
             ) : (
-              <NoDataPage message="No book is marked as Reading. Start reading...!" link = {"/mybooks"}/>
+              <NoDataPage message="No book is marked as Reading. Start reading...!" link = {`/user/${userId}/mybook`}/>
             )  }
           </div>
         ) : (

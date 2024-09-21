@@ -15,7 +15,7 @@ const Login = () => {
     try {
       const userData = await login(email, password);
       authenticateUser(userData);
-      console.log("userData--------",  userData);
+      // console.log("userData--------",  userData);
       const userId =  userData.payload.user.id;
       
       navigate(`/user/${userId}/dashboard`);  // Redirect to the homepage or dashboard after successful login

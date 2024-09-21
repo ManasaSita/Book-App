@@ -15,11 +15,11 @@ const Register = ({ onRegisterSuccess }) => {
     e.preventDefault();
     setError('');
     const userData = {username: username, email: email, password: password};
-    console.log("username, email, password---", userData);
+    // console.log("username, email, password---", userData);
     
     try {
       const response = await register(userData);
-      console.log("response------", response);
+      // console.log("response------", response);
       
       // Assuming the backend returns a token on successful registration
       authenticateUser(response);
