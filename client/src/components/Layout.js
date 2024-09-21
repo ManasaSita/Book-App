@@ -10,7 +10,7 @@ const Layout = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const userId = useParams().userId;
-  console.log("params-------", useParams(), userId);
+  // console.log("params-------", useParams(), userId);
   
   useEffect(() => {
     if (location.pathname.includes('/friends/messages')) {

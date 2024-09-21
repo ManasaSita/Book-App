@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children }) => {
   // Clone the children and pass userId as a prop
   return React.Children.map(children, child => {
     if (React.isValidElement(child)) {
-      console.log("React.cloneElement(child, { userId: user.id })----", React.cloneElement(child, { userId: user.payload.user.id }));
+      // console.log("React.cloneElement(child, { userId: user.id })----", React.cloneElement(child, { userId: user.payload.user.id }));
       
       return React.cloneElement(child, { userId: user.payload.user.id });
     }

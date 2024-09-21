@@ -33,7 +33,7 @@ const Friends = () => {
     try {
       const response = await fetchFriendRequests();
       setRequests(response.receivedRequests);
-      console.log("fetchRequests--------", requests);
+      // console.log("fetchRequests--------", requests);
       
     } catch (error) {
       console.error('Error fetching friend requests:', error);
@@ -64,7 +64,7 @@ const Friends = () => {
 
     const handleResponse = async (request, action) => {
     try {
-      console.log("handleResponse-----", request, action);
+      // console.log("handleResponse-----", request, action);
       
       await respondToFriendRequest(request.sender._id, request._id, action);
       setRequests(requests.filter(request => request._id !== request._id));
