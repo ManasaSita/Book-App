@@ -53,7 +53,7 @@ const ChatPage = () => {
             {isChatOpen ? (
               <Chat friend={selectedFriend} />
             ) : (
-              <p>Select a friend to start chatting</p>
+              <NoDataPage message='Select a friend to start chatting'/>
             )}
           </div>
         </div>

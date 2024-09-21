@@ -158,7 +158,7 @@ const Friends = () => {
             {selectedFriendId ? (
               <FriendProfile friendId={selectedFriendId} />
             ) : (
-              <p>Select a friend to view their profile</p>
+              <NoDataPage message='Select a friend to view their profile' />
             )}
           </>
         ):(
