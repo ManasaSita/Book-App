@@ -7,6 +7,7 @@ const bookSchema = new mongoose.Schema({
   thumbnail: { type: String },
   averageRating: { type: Number },
   pageCount: { type: Number },
+  googleBooksId: { type: String, required: true, unique: true },
   createdAt: { type: Date, default: Date.now }
 });
 

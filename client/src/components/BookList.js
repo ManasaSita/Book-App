@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getMyBooks, deleteBook, searchBooks, addBookFromSearch, updateBookStatus } from '../services/api';
+import { getMyBooks, deleteBook, searchBooks, addBookFromSearch, updateBookStatus, inMyCollection } from '../services/api';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import NoDataPage from './NoDataPage';
+import Notification from './Notification';
 
 const BookList = () => {
   const [books, setBooks] = useState([]);
@@ -11,7 +12,7 @@ const BookList = () => {
   const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
   const userId = useParams().userId;
-  console.log("params-------", useParams(), userId);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     fetchBooks();
@@ -32,13 +33,9 @@ const BookList = () => {
 
   const handleSearch = async () => {
     try {
-      setSearchPerformed(true); // Set searchPerformed to true when search is initiated
-      console.log("searching-------", searchQuery);
-      
+      setSearchPerformed(true);  
       const results = await searchBooks(searchQuery, userId);
       setSearchResults(results);
-      console.log("searchresults------", searchResults);
-      
     } catch (error) {
       console.error('Error searching books:', error);
     }
@@ -46,9 +43,8 @@ const BookList = () => {
 
   const handleAddBook = async (book) => {
     try {
-      console.log(book);
-      
       const addedBook = await addBookFromSearch({
+        googleBooksId: book.id,
         title: book.volumeInfo.title,
         author: book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown',
         description: book.volumeInfo.description,
@@ -56,13 +52,22 @@ const BookList = () => {
         averageRating: book.volumeInfo.averageRating ? book.volumeInfo.averageRating : null,
         pageCount: book.volumeInfo.pageCount,
       }, userId);
-      setBooks([...books, addedBook]);
+  
+      fetchBooks();
       setSearchResults([]);
       setSearchQuery('');
-      setSearchPerformed(false); // Reset searchPerformed after adding a book
-      fetchBooks();
+      setSearchPerformed(false);
+      setNotification({ message: 'Book added successfully', type: 'success' });
+      setTimeout(() => setNotification(false), 3000);
     } catch (error) {
       console.error('Error adding book:', error);
+      if (error.response && error.response.data.message === 'This book is already in your collection') {
+        setNotification({ message: error.response.data.message, type: 'warning' });
+        setTimeout(() => setNotification(false), 3000);
+      } else {
+        setNotification({ message: 'Failed to add book', type: 'error' });
+        setTimeout(() => setNotification(false), 3000);
+      }
     }
   };
 
@@ -97,6 +102,13 @@ const BookList = () => {
 
   return (
     <div className="book-list-container">
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       <div className="search-container">
         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search for books"/>
         <button type='submit' onClick={handleSearch}>Search</button>
@@ -147,7 +159,7 @@ const BookList = () => {
 
               <div className="book-grid">
                 {filteredBooks.map(book => (
-                  <div key={book._id} className="book-card">
+                  <div id={book._id} className="book-card">
                     {book.thumbnail ? (
                       <img src={book.thumbnail} alt={book.title} />
                     ) : (

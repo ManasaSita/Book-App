@@ -56,12 +56,14 @@ exports.respondToFriendRequest = async (req, res) => {
     // const userId = req.user.id;
 
     const request = await FriendRequests.findById(requestId);
+    console.log("FriendRequests-------", request);
+    
     if (!request) {
       return res.status(404).json({ message: 'Request not found' });
     }
 
-    // console.log("request.receiver-------", request.receiver);
-    // console.log("senderId----------", senderId);
+    console.log("request.receiver-------", request.sender.toString());
+    console.log("senderId----------", senderId);
     
     if (request.sender.toString() !== senderId) {
       return res.status(403).json({ message: 'Unauthorized action' });
@@ -245,13 +247,13 @@ exports.getFriendDetails = async (req, res) => {
 
 exports.postComment = async (req, res) => {
   try {
-    const { commenterId, friendId, text, bookId } = req.body;
+    const { commenterId, friendId, text, bookId, bookDetails } = req.body;
 
     console.log("Received data for posting comment:", req.body);
     console.log("Commenter ID:", commenterId);
 
-    if (!friendId || !text) {
-      return res.status(400).json({ message: 'Friend ID and content are required' });
+    if (!friendId || (!text && !bookDetails)) {
+      return res.status(400).json({ message: 'Friend ID and either content or book details are required' });
     }
 
     if (!commenterId) {
@@ -264,19 +266,35 @@ exports.postComment = async (req, res) => {
       return res.status(404).json({ message: 'Friendship not found' });
     }
 
+    let book;
+    if (bookDetails) {
+      // Check if the book already exists in the Books collection
+      book = await Books.findOne({ googleBooksId: bookDetails.googleBooksId });
+      if (!book) {
+        // If the book doesn't exist, create a new one
+        book = new Books(bookDetails);
+        await book.save();
+      }
+    }
+
     const comment = {
       commenter: commenterId,
       targetUser: friendId,
-      content: text,
+      content: bookDetails 
+        ? `I suggest you read "${bookDetails.title}". Click here to see details:` 
+        : text,
       createdAt: new Date(),
     };
 
-    if (bookId) {
+    if (book) {
+      comment.bookLink = book._id.toString();
+    } else if (bookId) {
       const bookExists = await Books.findById(bookId);
       if (!bookExists) {
         return res.status(404).json({ message: 'Book not found' });
       }
-      comment.bookLink = bookId;
+      console.log("bookExists----------", bookExists);
+      comment.bookLink = bookExists.googleBooksId;
     }
 
     try {
@@ -318,10 +336,14 @@ exports.postComment = async (req, res) => {
       commenterUsername: commenterMap[comment.commenter.toString()] || 'Unknown'
     }));
 
-    res.status(201).json({ message: 'Comment posted successfully', commentsWithUsernames });
+    res.status(201).json({ 
+      message: bookDetails ? 'Book suggested successfully' : 'Comment posted successfully', 
+      commentsWithUsernames,
+      bookId: book ? book._id : undefined
+    });
 
   } catch (error) {
-    console.error('Error posting comment:', error);
+    console.error('Error posting comment or suggesting book:', error);
     res.status(500).send('Server error');
   }
 };

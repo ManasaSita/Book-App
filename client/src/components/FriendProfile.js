@@ -21,6 +21,7 @@ const FriendProfile = ({ friendId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [suggestedBook, setSuggestedBook] = useState([]);
+
   // console.log("userData-------",  userData);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ const FriendProfile = ({ friendId }) => {
           new Date(a.createdAt) - new Date(b.createdAt)
         ) || [];
         setComments(sortedComments);
-        console.log("friendDetails---------", details.friendProfile, comments);
+        // console.log("friendDetails---------", details.friendProfile, comments);
         
       } catch (error) {
         console.error('Error fetching friend details:', error);
@@ -118,46 +119,26 @@ const FriendProfile = ({ friendId }) => {
         thumbnail: book.volumeInfo.imageLinks ? book.volumeInfo.imageLinks.thumbnail : null,
         averageRating: book.volumeInfo.averageRating || null,
         pageCount: book.volumeInfo.pageCount || null,
+        googleBooksId: book.id,
       };
 
-      const newBook = await createBook(bookDetails);
+      // Use the new suggestBook API endpoint
+      const response = await postComment({
+        commenterId: userId,
+        friendId: friendId,
+        bookDetails: bookDetails
+      });
 
-      console.log("bookDetails-----", bookDetails, newBook);
-
-      const upDatedBookDetails = {
-        ...bookDetails,
-        bookId: newBook._id,
-      };
-
-      const commentText = `I suggest you read "${bookDetails.title}". Click here to see details:`;
-
-      const commentData = { 
-        commenterId: userId, 
-        friendId: friendId, 
-        text: commentText,
-        bookId: upDatedBookDetails.bookId
-      };
-
-      console.log("commentData-----", commentData);
-
-      const response = await postComment(commentData);
-
-      if (response && response.commentsWithUsernames) {
-        const sortedComments = response.commentsWithUsernames.sort((a, b) => 
-          new Date(a.createdAt) - new Date(b.createdAt)
-        ) || [];
-        setComments(sortedComments);
-      } else {
-        // Fallback: optimistically add the new comment
-        const newCommentAdded = {
-          _id: Date.now(),
+      if (response && response.message === 'Book suggested successfully') {
+        const newComment = {
+          _id: Date.now(), // Temporary ID
           commenter: userId,
           commenterUsername: userData.username,
-          content: commentText,
-          bookDetails: bookDetails,
+          content: `I suggest you read "${bookDetails.title}". Click here to see details:`,
+          bookLink: response.bookId,
           createdAt: new Date().toISOString(),
         };
-        setComments(prevComments => [...prevComments, newCommentAdded]);
+        setComments(prevComments => [...prevComments, newComment]);
       }
 
       handleCloseBookSearch();
@@ -170,7 +151,7 @@ const FriendProfile = ({ friendId }) => {
     const suggestPattern = /I suggest you read "(.*?)"\. Click here to see details:/;
     const match = comment.content.match(suggestPattern);
     
-    console.log("suggestedbook", comment);
+    // console.log("suggestedbook", comment);
     
     if (match) {
       const bookTitle = match[1];
@@ -201,12 +182,22 @@ const FriendProfile = ({ friendId }) => {
         thumbnail: book.thumbnail,
         averageRating: book.averageRating || null,
         pageCount: book.pageCount || null,
+        googleBooksId: book.googleBooksId || null,
       }, userId);
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
-      console.log('Book added to your collection:', addedBook);
+
+      if(addedBook.status === 200) {
+        setShowNotification({ message: 'Book added to your collection!', type: 'success' });
+        setTimeout(() => setShowNotification(false), 3000);
+      }
     } catch (error) {
-      console.error('Error adding book to collection:', error);
+      console.error('Error adding book to your collection:', error); 
+      if (error.response && error.status === 409){
+        setShowNotification({message:error.response.data.message, type: 'warning' }); 
+        setTimeout(() => setShowNotification(false), 3000);
+      } else { 
+        setShowNotification({ message: 'Failed to add book to collection', type: 'error' });
+        setTimeout(() => setShowNotification(false), 3000);
+      }
     }
   };
 
@@ -222,6 +213,13 @@ const FriendProfile = ({ friendId }) => {
 
   return (
     <div className='friend-profile'>
+      {showNotification && (
+        <Notification
+          message={showNotification.message}
+          type={showNotification.type}
+          onClose={() => setShowNotification(null)}
+        />
+      )}
       <div className='profile-header'>
         <p className='name'><strong>{friendDetails.username}'s Profile </strong></p>
         <p className='email'>{friendDetails.email}</p>
@@ -276,12 +274,6 @@ const FriendProfile = ({ friendId }) => {
                   )}
                   {/* Add to My Collection Button */}
                   <button className='add-to-collection' onClick={() => handleAddBookToMyCollection(book)}>Add to My Collection</button>
-                  {showNotification && (
-                    <Notification
-                      message="Book added to your collection!"
-                      onClose={() => setShowNotification(false)}
-                    />
-                  )}
                 </div>
               </div>
             </div>
