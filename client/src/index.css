@@ -706,6 +706,19 @@ button:hover {
         } */
       }
     }
+
+    .no-comments {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 110px;
+      background-color: #f9f9f9;
+      text-align: center;
+      color: #555;
+      font-size: 24px;
+      margin: 0;
+      font-weight: bold;
+    }
   }
 
   .friend-profile-or-chat {
@@ -741,6 +754,20 @@ button:hover {
         .active {
           font-weight: bold;
         }
+      }
+
+      .no-books{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 316px;
+        width: 304%;
+        background-color: #f9f9f9;
+        text-align: center;
+        color: #555;
+        font-size: 24px;
+        margin: 0;
+        font-weight: bold;
       }
     }
   }
