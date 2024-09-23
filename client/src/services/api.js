@@ -94,9 +94,11 @@ export const fetchFriends = async (userId) => {
   }
 };
 
-export const searchUsers = async (username) => {
+export const searchUsers = async (username, userId) => {
+  // console.log("searchUsers---------",username, userId);
   try {
-    const response = await api.get(`/auth/search?username=${encodeURIComponent(username)}`);
+    const response = await api.get(`/auth/search/${userId}?username=${encodeURIComponent(username)}`);
+    // console.log("response--------", response); 
     return response.data;
   } catch (error) {
     console.error('Error searching users:', error);
