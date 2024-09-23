@@ -136,10 +136,17 @@ exports.searchUsers = async (req, res) => {
     const { userId } = req.params;
 
     // Find users with matching username, excluding the user with the given userId
-    const users = await Users.find({
+    let users = await Users.find({
       username: new RegExp(username, 'i'),
       _id: { $ne: userId } // Exclude the user with _id equal to userId
     });
+
+    // Get the list of friend IDs for the searching user
+    const friendships = await Friends.find({ user: userId });
+    const friendIds = friendships.map(friendship => friendship.friend.toString());
+
+    // Filter out users who are already friends
+    users = users.filter(user => !friendIds.includes(user._id.toString()));
 
     console.log("users-------", users);
     
