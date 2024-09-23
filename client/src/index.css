@@ -533,6 +533,8 @@ button:hover {
     ul {
       list-style-type: none;
       padding: 0;
+      max-height: 250px;
+      overflow-y: scroll;
 
       li {
         padding: 10px 0;
@@ -563,6 +565,27 @@ button:hover {
         border-radius: 0 20px 20px 0;
         margin: 0;
       }
+    }
+
+    .search-results {
+      ul li {
+        display: flex;
+        align-items: center;
+
+        .user-name {
+          margin: 0;
+          width: 62%;
+        }
+      }
+    }
+
+    .no-user {
+      font-size: 20px;
+      color: darkred;
+      text-align: center;
+      border: 1px solid;
+      border-radius: 22px;
+      padding: 10px;
     }
   }
 

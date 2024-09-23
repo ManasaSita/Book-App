@@ -14,6 +14,7 @@ const Friends = () => {
   const [requests, setRequests] = useState([]);
   const senderId = useParams().userId;
   const [showNotification, setShowNotification] = useState(false);
+  const [searchUser, setSearchUser] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -42,11 +43,20 @@ const Friends = () => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
+    if (searchTerm.trim() === '') {
+      // If the search term is empty or only whitespace, clear results and reset states
+      setSearchResults([]);
+      setSearchUser(false);
+      return;
+    }
     try {
-      const response = await searchUsers(searchTerm);
+      const response = await searchUsers(searchTerm, senderId);
       setSearchResults(response);
+      setSearchUser(true); // Always set to true when a search is performed
     } catch (error) {
       console.error('Error searching users:', error);
+      setSearchResults([]);
+      setSearchUser(true); // Set to true even if there's an error, to show "No user found"
     }
   };
 
@@ -108,27 +118,28 @@ const Friends = () => {
           <></>
         )}
         
-        {searchResults && searchResults.length > 0 ? (
-          <>
-            <h2>Search Results</h2>
-            <ul>
-              {searchResults.map(user => (
-                <li key={user._id}>
-                  {user.username}
-                  <button onClick={() => handleSendRequest(user._id)}>Add Friend</button>
-                  {showNotification && (
-                    <Notification
-                      message="Friend Request sent!"
-                      onClose={() => setShowNotification(false)}
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <></>
-          // <p>No results found.</p>
+        {searchUser && (
+          searchResults.length > 0 ? (
+            <div className='search-results'>
+              <h2>Search Results</h2>
+              <ul>
+                {searchResults.map(user => (
+                  <li key={user._id}>
+                    <p className='user-name'>{user.username}</p>
+                    <button onClick={() => handleSendRequest(user._id)}>Add Friend</button>
+                    {showNotification && (
+                      <Notification
+                        message="Friend Request sent!"
+                        onClose={() => setShowNotification(false)}
+                      />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className='no-user'>No user found!</p>
+          )
         )}
 
         {friends && friends.length > 0 ? (

@@ -24,7 +24,7 @@ router.get('/friends/requests', fetchFriendRequests);
 router.post('/friends/accept', respondToFriendRequest);
 router.post('/friends/decline', respondToFriendRequest);
 router.get('/friends/:userId', fetchFriends);
-router.get('/search', searchUsers);
+router.get('/search/:userId?', searchUsers);
 router.get('/friends/details/:id?', getFriendDetails);
 router.post('/friends/comment', postComment);
 router.get('/profile/:userId', getDetails);
