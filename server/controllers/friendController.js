@@ -127,16 +127,22 @@ exports.fetchFriends = async (req, res) => {
   }
 };
 
-
-
 // Search users
 exports.searchUsers = async (req, res) => {
   try {
-    console.log("searchUser------", req.query);
+    console.log("searchUser------", req.query, req.params);
     
     const { username } = req.query;
-    const users = await Users.find({ username: new RegExp(username, 'i') }); // Case-insensitive search
-    // const users = await Users.find({ username: username }); // Case-insensitive search
+    const { userId } = req.params;
+
+    // Find users with matching username, excluding the user with the given userId
+    const users = await Users.find({
+      username: new RegExp(username, 'i'),
+      _id: { $ne: userId } // Exclude the user with _id equal to userId
+    });
+
+    console.log("users-------", users);
+    
     res.status(200).json(users);
   } catch (error) {
     console.error('Error searching users:', error);
