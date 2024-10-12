@@ -361,47 +361,6 @@ exports.postComment = async (req, res) => {
   }
 };
 
-exports.getDetails = async (req, res) => {
-  try {
-    console.log("getDetails--------", req.user.id);
-
-    const { userId } = req.params;
-
-    // Fetch user details from the Friends collection
-    const userDetails = await Friends.find({ friend: userId });
-
-    if (!userDetails || userDetails.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Extract unique user IDs from userDetails
-    const userIds = userDetails.map(detail => detail.user);
-
-    // Fetch the corresponding usernames from the Users collection
-    const users = await Users.find({ _id: { $in: userIds } }, 'username');
-
-    // Create a map of user IDs to usernames for easy lookup
-    const userMap = users.reduce((acc, user) => {
-      acc[user._id] = user.username;
-      return acc;
-    }, {});
-
-    // Add the username to each userDetail based on the user ID
-    const detailedUserDetails = userDetails.map(detail => ({
-      ...detail.toObject(),
-      username: userMap[detail.user] || 'Unknown User'
-    }));
-
-    console.log("detailedUserDetails--------", detailedUserDetails);
-
-    return res.status(200).json({ userDetails: detailedUserDetails });
-
-  } catch (error) {
-    console.error('Error getting your profile details:', error);
-    res.status(500).send('Server error');
-  }
-};
-
 // Delete Comment
 // Delete Comment by Target User (Dashboard)
 exports.deleteCommentByTargetUser = async (req, res) => {

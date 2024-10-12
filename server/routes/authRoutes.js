@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { register, login } = require('../controllers/authController');
+const { register, login, updateBio, updateUsername, getDetails } = require('../controllers/authController');
 const { sendFriendRequest, fetchFriendRequests, respondToFriendRequest, fetchFriends, searchUsers, 
-    getFriendDetails, postComment, getDetails, deleteCommentByCommenter, deleteCommentByTargetUser,
+    getFriendDetails, postComment, deleteCommentByCommenter, deleteCommentByTargetUser,
     fetchMessages, sendMessage, getComments } = require('../controllers/friendController'); // Import new controller methods
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -16,6 +16,13 @@ router.post('/register', register);
 // @access  Public
 router.post('/login', login);
 
+router.get('/profile/:userId', getDetails);
+
+// New routes for updating bio and username
+router.put('/profile/update-bio', updateBio);
+router.put('/profile/update-username', updateUsername);
+
+
 router.use(authMiddleware);
 
 // Friend routes
@@ -27,7 +34,6 @@ router.get('/friends/:userId', fetchFriends);
 router.get('/search/:userId?', searchUsers);
 router.get('/friends/details/:id?', getFriendDetails);
 router.post('/friends/comment', postComment);
-router.get('/profile/:userId', getDetails);
 router.delete('/friends/user/delete-comment', deleteCommentByTargetUser);
 router.delete('/friends/commenter/delete-comment', deleteCommentByCommenter);
 router.get('/friends/messages/:friendId', fetchMessages);
