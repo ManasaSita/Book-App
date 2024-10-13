@@ -7,12 +7,10 @@ import Register from './components/Auth/Register';
 import Login from './components/Auth/Login';
 import Dashboard from './components/Dashboard';
 import BookList from './components/BookList';
-import AddBook from './components/AddBook';
 import BookDetail from './components/BookDetail';
 import Profile from './components/Profile';
 import Friends from './components/Friends';
 import FriendProfile from './components/FriendProfile';
-import FriendRequestButton from './components/FriendRequestButton'; // Import the button if you want to use it somewhere
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Notification from './components/Notification';
 import ChatPage from './components/ChatPage';
@@ -49,7 +47,6 @@ function AppContent() {
         <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="mybooks" element={<ProtectedRoute><BookList /></ProtectedRoute>} />
-        <Route path="add-book" element={<ProtectedRoute><AddBook /></ProtectedRoute>} />
         <Route path="books/:bookId" element={<ProtectedRoute><BookDetail /></ProtectedRoute>} />
         <Route path="books/suggested/:bookId" element={<ProtectedRoute><BookDetail /></ProtectedRoute>} />
         <Route path="friends/:id" element={<ProtectedRoute><FriendProfile /></ProtectedRoute>} />
