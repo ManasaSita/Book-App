@@ -132,7 +132,10 @@ export const postComment = async (commentData) => {
 
 export const getDetails = async (userId) => {
   try {
+    console.log("getDetails------", userId);
+    
     const response = await api.get(`/auth/profile/${userId}`);
+    console.log("response----", response)
     return response.data;
   } catch (error) {
     console.error('Error fetching user details:', error);
@@ -396,6 +399,29 @@ export const searchBooks = async (query) => {
     return response.data.items;
   } catch (error) {
     console.error('Error searching books:', error);
+    throw error;
+  }
+};
+
+
+// API call to update user bio
+export const updateBio = async (data) => {
+  try {
+    const response = await api.put('/auth/profile/update-bio',  data );
+    return response.data;
+  } catch (error) {
+    console.error('Error updating bio:', error);
+    throw error;
+  }
+};
+
+// API call to update username
+export const updateUsername = async (username) => {
+  try {
+    const response = await api.put('/auth/profile/update-username', { username });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating username:', error);
     throw error;
   }
 };

@@ -9,11 +9,13 @@ const Profile = () => {
   const userId = user?.payload?.user.id;
   const [userData, setUserData] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [booksReadCount, setBooksReadCount] = useState(0);
   const [books, setBooks] = useState([]);
+  const [showBooks, setShowBooks] = useState(false);
+  const [editedBio, setEditedBio] = useState('');
 
   useEffect(() => {
     fetchBooks();
+    fetchUserDetails();
   }, [userId]);
 
   const fetchBooks = async () => {
@@ -27,23 +29,19 @@ const Profile = () => {
     }
   };
 
-  // Calculate total books 
+  const fetchUserDetails = async () => {
+    try {
+      const response = await getDetails(userId);
+      setUserData(response.user);
+      setEditedBio(response.user.bio);
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+    }
+  };
+
   const totalBooks = books.length;
   const totalBooksRead = books.filter(book => book.status === 'read').length;
- // New state for the number of books read
-
-  useEffect(() => {
-    const getUser = async () => {
-      try {
-        const response = await getDetails(userId);
-        setUserData(response.user);
-      } catch (error) {
-        console.error('Error fetching user details:', error);
-      }
-    };
-
-    getUser();
-  }, [userId]);
+  const totalReadingBooks = books.filter(book => book.status === 'currently-reading').length;
 
   const handleLogout = () => {
     logout();
@@ -56,8 +54,8 @@ const Profile = () => {
 
   const handleBioSave = async () => {
     try {
-      const response = await updateBio({ bio: userData.bio, user: user.payload.user });
-      setUserData(response.userData);
+      const response = await updateBio({ bio: editedBio, user: user.payload.user });
+      setUserData(prevData => ({ ...prevData, bio: editedBio }));
       setIsEditing(false);
       alert('Bio updated successfully');
     } catch (error) {
@@ -66,12 +64,11 @@ const Profile = () => {
   };
 
   const handleBioChange = (e) => {
-    setUserData(prevData => ({ ...prevData, bio: e.target.value }));
+    setEditedBio(e.target.value);
   };
 
-  // Callback to receive the number of books read from BookList
-  const handleBooksReadUpdate = (count) => {
-    setBooksReadCount(count);
+  const toggleShowBooks = () => {
+    setShowBooks(!showBooks);
   };
 
   return (
@@ -83,51 +80,64 @@ const Profile = () => {
               <p>Username: <strong>{userData.username}</strong></p>
             </li>
             <li>
-              <p>Email: {userData.email}</p>
+              <p>Email: <strong>{userData.email}</strong></p>
             </li>
             <li>
               <label>Bio</label>
-              {!isEditing ? (
-                <>
-                  <p>{userData.bio}</p>
-                  <button className='edit-btn' onClick={handleEditBioClick}>Edit</button>
-                </>
-              ) : (
-                <>
-                  <input
-                    id='bio'
-                    type='text'
-                    value={userData.bio}
-                    onChange={handleBioChange}
-                  />
-                  <button className='save-btn' onClick={handleBioSave}>Save</button>
-                </>
-              )}
+              <div className='bio-section'>
+                <p className='bio-content'><strong>{userData.bio}</strong></p>
+                {!isEditing && (
+                  <button className='edit-btn' onClick={handleEditBioClick}>Edit Bio</button>
+                )}
+              </div>
             </li>
-            <li>
-              <p>Total Books Read: <strong>{totalBooks}</strong></p> {/* Display the books read count */}
+            <li className='book-collection'>
+              <p>Collections: <strong>{totalBooks}</strong></p>
+              <button className='toggle-books' onClick={toggleShowBooks}>
+                {showBooks ? 'Hide Books' : 'Show Books'}
+              </button>
             </li>
           </ul>
           <button className='nav-link logout-btn' onClick={handleLogout}>Logout</button>
         </div>
       </div>
       <div className='right-side'>
-        {/* Pass the handleBooksReadUpdate callback to BookList */}
-        <h2>Books Summary</h2>
-        <p>Total Books Read: {totalBooksRead}</p>
-        {books.length > 0 ? (
-          <div className="book-grid">
-            {books.map(book => (
-              <div key={book._id} className="book-card">
-                <img src={book.thumbnail}/>
-                <h4>{book.title}</h4>
-                <p>Author: {book.author}</p>
-                <p>Status: {book.status}</p>
-              </div>
-            ))}
+        {isEditing && (
+          <div className='bio-edit-section'>
+            <input
+              type='text'
+              value={editedBio}
+              onChange={handleBioChange}
+              placeholder="Edit your bio"
+              maxLength={120}
+            />
+            <button className='save-btn' onClick={handleBioSave}>Save</button>
           </div>
-        ) : (
-          <p>No books added yet.</p>
+        )}
+        {showBooks && (
+          <div  className='books'>
+            <h2 className='summary'>Books Summary</h2>
+            <div className='book-totals'>
+              <p><strong>Read:</strong> {totalBooksRead}</p> 
+              <p><strong>Reading:</strong> {totalReadingBooks}</p>
+            </div>
+            {books.length > 0 ? (
+              <div className="book-grid">
+                {books.map(book => (
+                  <div key={book._id} className="book-card">
+                    <img src={book.thumbnail} alt={book.title} />
+                    <div className='details'>
+                      <h4>{book.title}</h4>
+                      <p>Author: <strong>{book.author}</strong></p>
+                      <p>Reading Status: <strong>{book.status}</strong></p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No books added yet.</p>
+            )}
+          </div>
         )}
       </div>
     </div>
