@@ -102,7 +102,8 @@ const BookDetail = () => {
         description: book.description,
         thumbnail: book.thumbnail,
         averageRating: book.averageRating,
-        pageCount: book.pageCount
+        pageCount: book.pageCount,
+        genre: book.genre,
       };
       const res = await addBookFromSearch(bookToAdd, userId);
       

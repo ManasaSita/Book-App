@@ -8,6 +8,7 @@ const bookSchema = new mongoose.Schema({
   averageRating: { type: Number },
   pageCount: { type: Number },
   googleBooksId: { type: String, required: true, unique: true },
+  genre: { type: Array },
   createdAt: { type: Date, default: Date.now }
 });
 

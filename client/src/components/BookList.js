@@ -51,6 +51,7 @@ const BookList = () => {
         thumbnail: book.volumeInfo.imageLinks ? book.volumeInfo.imageLinks.thumbnail : null,
         averageRating: book.volumeInfo.averageRating ? book.volumeInfo.averageRating : null,
         pageCount: book.volumeInfo.pageCount,
+        genre: book.volumeInfo.categories,
       }, userId);
   
       fetchBooks();
