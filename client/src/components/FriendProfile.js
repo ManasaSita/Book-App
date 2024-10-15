@@ -120,6 +120,7 @@ const FriendProfile = ({ friendId }) => {
         averageRating: book.volumeInfo.averageRating || null,
         pageCount: book.volumeInfo.pageCount || null,
         googleBooksId: book.id,
+        genre: book.genre || null,
       };
 
       // Use the new suggestBook API endpoint
